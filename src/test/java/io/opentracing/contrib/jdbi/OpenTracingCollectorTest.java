@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 public class OpenTracingCollectorTest {
     @BeforeClass
     public static void setUp() throws Exception {
+        Class.forName("com.mysql.jdbc.Driver");
         {
             DBI dbi = new DBI("jdbc:mysql://localhost/", "root", "");
             Handle handle = dbi.open();
