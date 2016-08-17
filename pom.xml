@@ -9,7 +9,7 @@
 
     <groupId>io.opentracing</groupId>
     <artifactId>opentracing-jdbi</artifactId>
-    <version>0.0.16</version>
+    <version>0.0.17-SNAPSHOT</version>
     <build>
         <pluginManagement>
             <plugins>
@@ -93,7 +93,7 @@
         <url>https://github.com/opentracing-contrib/java-jdbi</url>
         <connection>scm:git:https://github.com/opentracing-contrib/java-jdbi.git</connection>
         <developerConnection>scm:git:https://github.com/opentracing-contrib/java-jdbi.git</developerConnection>
-        <tag>0.0.16</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <developers>
