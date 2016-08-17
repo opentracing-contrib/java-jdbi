@@ -7,7 +7,7 @@
     <url>https://github.com/opentracing-contrib/java-jdbi</url>
     <inceptionYear>2016</inceptionYear>
 
-    <groupId>io.opentracing.contrib</groupId>
+    <groupId>io.opentracing</groupId>
     <artifactId>opentracing-jdbi</artifactId>
     <version>0.0.15-SNAPSHOT</version>
     <build>
