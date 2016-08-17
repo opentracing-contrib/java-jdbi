@@ -4,6 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <name>OpenTracing-JDBI</name>
+    <description>OpenTracing Instrumentation for JDBI</description>
+    <url>https://github.com/opentracing-contrib/java-jdbi</url>
+    <inceptionYear>2016</inceptionYear>
+
     <groupId>io.opentracing.contrib</groupId>
     <artifactId>opentracing-jdbi</artifactId>
     <version>1.0-SNAPSHOT</version>
@@ -39,6 +44,34 @@
         <maven-source-plugin.version>3.0.0</maven-source-plugin.version>
         <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
     </properties>
+
+    <organization>
+        <name>OpenTracing</name>
+        <url>http://opentracing.io/</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/opentracing-contrib/java-jdbi</url>
+        <connection>scm:git:https://github.com/opentracing-contrib/java-jdbi.git</connection>
+        <developerConnection>scm:git:https://github.com/opentracing-contrib/java-jdbi.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>bensigelman</id>
+            <name>Ben Sigelman</name>
+            <email>bhs@lightstep.com</email>
+        </developer>
+    </developers>
 
     <dependencies>
 
