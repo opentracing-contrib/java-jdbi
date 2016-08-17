@@ -35,6 +35,10 @@ branches:
   except:
     - /^[0-9]/
 
+# Needed for the unittests
+services:
+  - mysql
+
 env:
   global:
   # Ex. travis encrypt BINTRAY_USER=your_github_account
