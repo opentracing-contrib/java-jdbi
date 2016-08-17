@@ -19,16 +19,23 @@ import static org.junit.Assert.assertEquals;
 
 // REQUIRES: a mysql database running on localhost.
 public class OpenTracingCollectorTest {
+    private static DBI getLocalDBI() {
+        return getLocalDBI("");
+    }
+    private static DBI getLocalDBI(String dbName) {
+        return new DBI("jdbc:mysql://127.0.0.1/" + dbName, "root", "");
+    }
+
     @BeforeClass
     public static void setUp() throws Exception {
         Class.forName("com.mysql.jdbc.Driver");
         {
-            DBI dbi = new DBI("jdbc:mysql://localhost/", "root", "");
+            DBI dbi = getLocalDBI();
             Handle handle = dbi.open();
             handle.execute("CREATE DATABASE IF NOT EXISTS _jdbi_test_db");
         }
         {
-            DBI dbi = new DBI("jdbc:mysql://localhost/_jdbi_test_db", "root", "");
+            DBI dbi = getLocalDBI("_jdbi_test_db");
             Handle handle = dbi.open();
             handle.execute("CREATE TABLE IF NOT EXISTS accounts (id BIGINT AUTO_INCREMENT, PRIMARY KEY (id))");
         }
@@ -36,7 +43,7 @@ public class OpenTracingCollectorTest {
 
     @AfterClass
     public static void tearDown() throws Exception {
-        DBI dbi = new DBI("jdbc:mysql://localhost/", "root", "");
+        DBI dbi = getLocalDBI();
         Handle handle = dbi.open();
         handle.execute("DROP DATABASE _jdbi_test_db");
     }
@@ -44,7 +51,7 @@ public class OpenTracingCollectorTest {
     @Test
     public void testParentage() {
         MockTracer tracer = new MockTracer();
-        DBI dbi = new DBI("jdbc:mysql://localhost/_jdbi_test_db", "root", "");
+        DBI dbi = getLocalDBI("_jdbi_test_db");
         dbi.setTimingCollector(new OpenTracingCollector(tracer));
 
         // The actual JDBI code:
@@ -74,7 +81,7 @@ public class OpenTracingCollectorTest {
     // Requires a mysql database running on localhost.
     public void testCustomOperationName() {
         MockTracer tracer = new MockTracer();
-        DBI dbi = new DBI("jdbc:mysql://localhost/_jdbi_test_db", "root", "");
+        DBI dbi = getLocalDBI("_jdbi_test_db");
         dbi.setTimingCollector(new OpenTracingCollector(tracer, new OpenTracingCollector.OperationNamer() {
             @Override
             public String generateOperationName(StatementContext ctx) {
@@ -99,7 +106,7 @@ public class OpenTracingCollectorTest {
     // Requires a mysql database running on localhost.
     public void testActiveSpanSource() {
         MockTracer tracer = new MockTracer();
-        DBI dbi = new DBI("jdbc:mysql://localhost/_jdbi_test_db", "root", "");
+        DBI dbi = getLocalDBI("_jdbi_test_db");
 
         Tracer.SpanBuilder parentBuilder = tracer.buildSpan("active span");
         final Span activeSpan = parentBuilder.start();
