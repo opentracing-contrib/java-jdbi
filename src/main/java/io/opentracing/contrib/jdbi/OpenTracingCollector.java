@@ -122,20 +122,20 @@ public class OpenTracingCollector implements TimingCollector {
      *                 return null;
      *             }
      *         };
-     *     };
+     * };
      *
-     *     ... elsewhere ...
-     *     {
-     *         ActiveSpanSource spanSource = new ActiveSpanSource() {
-     *             @Override
-     *             public Span activeSpan(StatementContext ctx) {
-     *                 // (In this example we ignore `ctx` entirely)
-     *                 return activeSpan.get();
-     *             }
-     *         };
-     *         OpenTracingCollector otColl = new OpenTracingCollector(tracer, spanSource);
-     *         ...
-     *     }
+     * ... elsewhere ...
+     * {
+     *     ActiveSpanSource spanSource = new ActiveSpanSource() {
+     *         @Override
+     *         public Span activeSpan(StatementContext ctx) {
+     *             // (In this example we ignore `ctx` entirely)
+     *             return activeSpan.get();
+     *         }
+     *     };
+     *     OpenTracingCollector otColl = new OpenTracingCollector(tracer, spanSource);
+     *     ...
+     * }
      * }</pre>
      */
     public interface ActiveSpanSource {
