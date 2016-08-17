@@ -13,6 +13,27 @@
     <artifactId>opentracing-jdbi</artifactId>
     <version>1.0-SNAPSHOT</version>
     <build>
+        <pluginManagement>
+            <plugins>
+                <!-- mvn -N io.takari:maven:wrapper -Dmaven=3.3.9 -->
+                <plugin>
+                    <groupId>io.takari</groupId>
+                    <artifactId>maven</artifactId>
+                    <version>${maven-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven-jar-plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -33,6 +54,14 @@
                 </configuration>
             </plugin>
 
+            <!-- Ensures checksums are added to published jars -->
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>${maven-install-plugin.version}</version>
+                <configuration>
+                    <createChecksum>true</createChecksum>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -41,8 +70,12 @@
         <opentracing.version>0.14.0</opentracing.version>
         <mysql.version>5.1.6</mysql.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
-        <maven-source-plugin.version>3.0.0</maven-source-plugin.version>
         <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
+        <maven-plugin.version>0.3.3</maven-plugin.version>
+        <maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
+        <maven-source-plugin.version>3.0.0</maven-source-plugin.version>
+        <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
+        <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
     </properties>
 
     <organization>
@@ -103,7 +136,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.6</version>
+            <version>${mysql.version}</version>
             <scope>test</scope>
         </dependency>
 
