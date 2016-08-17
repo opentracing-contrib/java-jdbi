@@ -7,6 +7,48 @@
     <url>https://github.com/opentracing-contrib/java-jdbi</url>
     <inceptionYear>2016</inceptionYear>
 
+    <organization>
+        <name>OpenTracing</name>
+        <url>http://opentracing.io/</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/opentracing-contrib/java-jdbi</url>
+        <connection>scm:git:https://github.com/opentracing-contrib/java-jdbi.git</connection>
+        <developerConnection>scm:git:https://github.com/opentracing-contrib/java-jdbi.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>bensigelman</id>
+            <name>Ben Sigelman</name>
+            <email>bhs@lightstep.com</email>
+        </developer>
+    </developers>
+
+    <properties>
+        <jdbi.version>2.74</jdbi.version>
+        <opentracing.version>0.14.0</opentracing.version>
+        <mysql.version>5.1.6</mysql.version>
+        <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
+        <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
+        <maven-plugin.version>0.3.3</maven-plugin.version>
+        <maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
+        <maven-source-plugin.version>3.0.0</maven-source-plugin.version>
+        <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
+        <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
+        <centralsync-maven-plugin.version>0.1.0</centralsync-maven-plugin.version>
+    </properties>
+
     <groupId>io.opentracing</groupId>
     <artifactId>opentracing-jdbi</artifactId>
     <version>0.0.17-SNAPSHOT</version>
@@ -42,6 +84,16 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>io.zipkin.centralsync-maven-plugin</groupId>
+                <artifactId>centralsync-maven-plugin</artifactId>
+                <version>${centralsync-maven-plugin.version}</version>
+                <configuration>
+                    <subject>opentracing</subject>
+                    <repo>maven</repo>
+                    <packageName>opentracing-jdbi</packageName>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>${maven-release-plugin.version}</version>
                 <configuration>
@@ -62,47 +114,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <properties>
-        <jdbi.version>2.74</jdbi.version>
-        <opentracing.version>0.14.0</opentracing.version>
-        <mysql.version>5.1.6</mysql.version>
-        <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
-        <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
-        <maven-plugin.version>0.3.3</maven-plugin.version>
-        <maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
-        <maven-source-plugin.version>3.0.0</maven-source-plugin.version>
-        <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
-        <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
-    </properties>
-
-    <organization>
-        <name>OpenTracing</name>
-        <url>http://opentracing.io/</url>
-    </organization>
-
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <scm>
-        <url>https://github.com/opentracing-contrib/java-jdbi</url>
-        <connection>scm:git:https://github.com/opentracing-contrib/java-jdbi.git</connection>
-        <developerConnection>scm:git:https://github.com/opentracing-contrib/java-jdbi.git</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
-
-    <developers>
-        <developer>
-            <id>bensigelman</id>
-            <name>Ben Sigelman</name>
-            <email>bhs@lightstep.com</email>
-        </developer>
-    </developers>
 
     <distributionManagement>
         <repository>
