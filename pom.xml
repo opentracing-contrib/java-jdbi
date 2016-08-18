@@ -24,7 +24,7 @@
         <url>https://github.com/opentracing-contrib/java-jdbi</url>
         <connection>scm:git:https://github.com/opentracing-contrib/java-jdbi.git</connection>
         <developerConnection>scm:git:https://github.com/opentracing-contrib/java-jdbi.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>0.2.0</tag>
     </scm>
 
     <developers>
@@ -51,7 +51,7 @@
 
     <groupId>io.opentracing</groupId>
     <artifactId>opentracing-jdbi</artifactId>
-    <version>0.0.17-SNAPSHOT</version>
+    <version>0.2.0</version>
     <build>
         <pluginManagement>
             <plugins>
