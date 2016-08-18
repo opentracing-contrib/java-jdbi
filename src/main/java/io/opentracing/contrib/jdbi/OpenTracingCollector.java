@@ -55,7 +55,6 @@ public class OpenTracingCollector implements TimingCollector {
         this.activeSpanSource = spanSource;
     }
 
-    @Override
     public void collect(long elapsedNanos, StatementContext statementContext) {
         long nowMicros = System.currentTimeMillis() * 1000;
         Tracer.SpanBuilder builder = tracer
@@ -94,7 +93,6 @@ public class OpenTracingCollector implements TimingCollector {
      */
     public interface OperationNamer {
         public static OperationNamer DEFAULT = new OperationNamer() {
-            @Override
             public String generateOperationName(StatementContext ctx) {
                 return "DBI Statement";
             }
@@ -118,24 +116,21 @@ public class OpenTracingCollector implements TimingCollector {
      *     // Thread local variable containing each thread's ID
      *     private static final ThreadLocal<Span> activeSpan =
      *         new ThreadLocal<Span>() {
-     *             @Override protected Integer initialValue() {
+     *             protected Integer initialValue() {
      *                 return null;
      *             }
      *         };
      * };
      *
      * ... elsewhere ...
-     * {
-     *     ActiveSpanSource spanSource = new ActiveSpanSource() {
-     *         @Override
-     *         public Span activeSpan(StatementContext ctx) {
-     *             // (In this example we ignore `ctx` entirely)
-     *             return activeSpan.get();
-     *         }
-     *     };
-     *     OpenTracingCollector otColl = new OpenTracingCollector(tracer, spanSource);
-     *     ...
-     * }
+     * ActiveSpanSource spanSource = new ActiveSpanSource() {
+     *     public Span activeSpan(StatementContext ctx) {
+     *         // (In this example we ignore `ctx` entirely)
+     *         return activeSpan.get();
+     *     }
+     * };
+     * OpenTracingCollector otColl = new OpenTracingCollector(tracer, spanSource);
+     * ...
      * }</pre>
      */
     public interface ActiveSpanSource {
