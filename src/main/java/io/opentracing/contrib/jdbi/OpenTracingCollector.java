@@ -35,31 +35,30 @@ public class OpenTracingCollector implements TimingCollector {
     public final static String PARENT_SPAN_ATTRIBUTE_KEY = "io.opentracing.parent";
 
     private final Tracer tracer;
-    private final OperationNamer operationNamer;
+    private final SpanDecorator spanDecorator;
     private final ActiveSpanSource activeSpanSource;
 
     public OpenTracingCollector(Tracer tracer) {
-        this(tracer, OperationNamer.DEFAULT);
+        this(tracer, SpanDecorator.DEFAULT);
     }
 
-    public OpenTracingCollector(Tracer tracer, OperationNamer operationNamer) {
-        this(tracer, operationNamer, null);
+    public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator) {
+        this(tracer, spanDecorator, null);
     }
     public OpenTracingCollector(Tracer tracer, ActiveSpanSource spanSource) {
-        this(tracer, OperationNamer.DEFAULT, spanSource);
+        this(tracer, SpanDecorator.DEFAULT, spanSource);
     }
 
-    public OpenTracingCollector(Tracer tracer, OperationNamer operationNamer, ActiveSpanSource spanSource) {
+    public OpenTracingCollector(Tracer tracer, SpanDecorator operationNamer, ActiveSpanSource spanSource) {
         this.tracer = tracer;
-        this.operationNamer = operationNamer;
+        this.spanDecorator = operationNamer;
         this.activeSpanSource = spanSource;
     }
 
-    @Override
     public void collect(long elapsedNanos, StatementContext statementContext) {
         long nowMicros = System.currentTimeMillis() * 1000;
         Tracer.SpanBuilder builder = tracer
-                .buildSpan(operationNamer.generateOperationName(statementContext))
+                .buildSpan(spanDecorator.generateOperationName(statementContext))
                 .withStartTimestamp(nowMicros - (elapsedNanos / 1000));
         Span parent = (Span)statementContext.getAttribute(PARENT_SPAN_ATTRIBUTE_KEY);
         if (parent == null && this.activeSpanSource != null) {
@@ -69,8 +68,9 @@ public class OpenTracingCollector implements TimingCollector {
             builder = builder.asChildOf(parent);
         }
         Span collectSpan = builder.start();
+        spanDecorator.decorateSpan(collectSpan, elapsedNanos, statementContext);
         try {
-            collectSpan.log("Raw SQL", statementContext.getRawSql());
+            collectSpan.log("SQL query finished", statementContext.getRawSql());
         } finally {
             collectSpan.finish(nowMicros);
         }
@@ -87,25 +87,40 @@ public class OpenTracingCollector implements TimingCollector {
     }
 
     /**
-     * OperationNamer allows the OpenTracingCollector user to control the precise naming of OpenTracing Spans emitted
-     * by the collector.
+     * SpanDecorator allows the OpenTracingCollector user to control the precise naming and decoration of OpenTracing
+     * Spans emitted by the collector.
      *
-     * @see OpenTracingCollector#OpenTracingCollector(Tracer, OperationNamer)
+     * @see OpenTracingCollector#OpenTracingCollector(Tracer, SpanDecorator)
      */
-    public interface OperationNamer {
-        public static OperationNamer DEFAULT = new OperationNamer() {
-            @Override
+    public interface SpanDecorator {
+        public static SpanDecorator DEFAULT = new SpanDecorator() {
             public String generateOperationName(StatementContext ctx) {
                 return "DBI Statement";
+            }
+
+            @Override
+            public void decorateSpan(Span jdbiSpan, long elapsedNanos, StatementContext ctx) {
+                // (by default, do nothing)
             }
         };
 
         /**
          * Transform an DBI StatementContext into an OpenTracing Span operation name.
          *
-         * @return an operation name suitable for an OpenTracing Span
+         * @param ctx the StatementContext passed to TimingCollector.collect()
+         * @return an operation name suitable for the associated OpenTracing Span
          */
         public String generateOperationName(StatementContext ctx);
+
+        /**
+         * Get the active Span (to use as a parent for any DBI Spans). Implementations may or may not need to refer
+         * to the StatementContext.
+         *
+         * @param jdbiSpan the JDBI Span to decorate (before `finish` is called)
+         * @param elapsedNanos the elapsedNanos passed to TimingCollector.collect()
+         * @param ctx the StatementContext passed to TimingCollector.collect()
+         */
+        public void decorateSpan(Span jdbiSpan, long elapsedNanos, StatementContext ctx);
     }
 
     /**
@@ -118,24 +133,21 @@ public class OpenTracingCollector implements TimingCollector {
      *     // Thread local variable containing each thread's ID
      *     private static final ThreadLocal<Span> activeSpan =
      *         new ThreadLocal<Span>() {
-     *             @Override protected Integer initialValue() {
+     *             protected Integer initialValue() {
      *                 return null;
      *             }
      *         };
      * };
      *
      * ... elsewhere ...
-     * {
-     *     ActiveSpanSource spanSource = new ActiveSpanSource() {
-     *         @Override
-     *         public Span activeSpan(StatementContext ctx) {
-     *             // (In this example we ignore `ctx` entirely)
-     *             return activeSpan.get();
-     *         }
-     *     };
-     *     OpenTracingCollector otColl = new OpenTracingCollector(tracer, spanSource);
-     *     ...
-     * }
+     * ActiveSpanSource spanSource = new ActiveSpanSource() {
+     *     public Span activeSpan(StatementContext ctx) {
+     *         // (In this example we ignore `ctx` entirely)
+     *         return activeSpan.get();
+     *     }
+     * };
+     * OpenTracingCollector otColl = new OpenTracingCollector(tracer, spanSource);
+     * ...
      * }</pre>
      */
     public interface ActiveSpanSource {
