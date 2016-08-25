@@ -19,7 +19,6 @@ language: java
 jdk:
   - oraclejdk8
 
-
 before_install:
   # Parameters used during release
   - git config user.name "$GH_USER"
@@ -33,7 +32,7 @@ install:
   - ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
 script:
-  - ./travis/publish.sh
+  - ./mvnw test
 
 # Don't build release tags. This avoids publish conflicts because the version commit exists both on master and the release tag.
 # See https://github.com/travis-ci/travis-ci/issues/1532
