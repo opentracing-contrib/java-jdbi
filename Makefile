@@ -1,5 +1,5 @@
 build:
-	./mvnw -s .settings.xml install
+	./mvnw -s settings.xml install
 
 publish:
-	./mvnw -s .settings.xml clean deploy
+	./mvnw -s settings.xml clean deploy

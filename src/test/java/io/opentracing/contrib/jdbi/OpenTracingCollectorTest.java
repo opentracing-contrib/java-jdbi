@@ -79,13 +79,18 @@ public class OpenTracingCollectorTest {
 
     @Test
     // Requires a mysql database running on localhost.
-    public void testCustomOperationName() {
+    public void testDecorations() {
         MockTracer tracer = new MockTracer();
         DBI dbi = getLocalDBI("_jdbi_test_db");
-        dbi.setTimingCollector(new OpenTracingCollector(tracer, new OpenTracingCollector.OperationNamer() {
+        dbi.setTimingCollector(new OpenTracingCollector(tracer, new OpenTracingCollector.SpanDecorator() {
             @Override
             public String generateOperationName(StatementContext ctx) {
                 return "custom name";
+            }
+
+            @Override
+            public void decorateSpan(Span jdbiSpan, long elapsedNanos, StatementContext ctx) {
+                jdbiSpan.setTag("testTag", "testVal");
             }
         }));
 
@@ -100,6 +105,7 @@ public class OpenTracingCollectorTest {
         assertEquals(finishedSpans.size(), 1);
         MockSpan span = finishedSpans.get(0);
         assertEquals("custom name", span.operationName());
+        assertEquals("testVal", span.tags().get("testTag"));
     }
 
     @Test
