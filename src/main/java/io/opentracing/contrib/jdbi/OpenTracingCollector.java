@@ -107,6 +107,7 @@ public class OpenTracingCollector implements TimingCollector {
         /**
          * Transform an DBI StatementContext into an OpenTracing Span operation name.
          *
+         * @param ctx the StatementContext passed to TimingCollector.collect()
          * @return an operation name suitable for the associated OpenTracing Span
          */
         public String generateOperationName(StatementContext ctx);
@@ -118,7 +119,6 @@ public class OpenTracingCollector implements TimingCollector {
          * @param jdbiSpan the JDBI Span to decorate (before `finish` is called)
          * @param elapsedNanos the elapsedNanos passed to TimingCollector.collect()
          * @param ctx the StatementContext passed to TimingCollector.collect()
-         * @return the currently active Span (for this thread, etc), or null if no such Span could be found.
          */
         public void decorateSpan(Span jdbiSpan, long elapsedNanos, StatementContext ctx);
     }
