@@ -26,7 +26,7 @@
     </server>
     <server>
       <id>gpg.passphrase</id>
-      <password>${env.GPG_PASSWORD}</password>
+      <passphrase>${env.GPG_PASSPHRASE}</passphrase>
     </server>
   </servers>
 </settings>
