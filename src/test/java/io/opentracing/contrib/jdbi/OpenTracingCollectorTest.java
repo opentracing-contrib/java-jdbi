@@ -7,15 +7,12 @@ import io.opentracing.mock.MockTracer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.skife.jdbi.v2.DBI;
-import org.skife.jdbi.v2.Handle;
-import org.skife.jdbi.v2.Query;
-import org.skife.jdbi.v2.StatementContext;
+import org.skife.jdbi.v2.*;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 // REQUIRES: a mysql database running on localhost.
 public class OpenTracingCollectorTest {
@@ -140,5 +137,44 @@ public class OpenTracingCollectorTest {
         assertEquals("DBI Statement", childSpan.operationName());
         assertEquals(parentSpan.context().traceId(), childSpan.context().traceId());
         assertEquals(parentSpan.context().spanId(), childSpan.parentId());
+    }
+
+    @Test
+    public void testChainsToNext() {
+        MockTracer tracer = new MockTracer();
+        DBI dbi = getLocalDBI("_jdbi_test_db");
+        Tracer.SpanBuilder parentBuilder = tracer.buildSpan("active span");
+
+        class TestTimingCollector implements TimingCollector {
+            boolean called = false;
+            @Override
+            public void collect(long l, StatementContext statementContext) {
+                called = true;
+            }
+        };
+
+        TestTimingCollector subject = new TestTimingCollector();
+
+        final Span activeSpan = parentBuilder.start();
+        dbi.setTimingCollector(new OpenTracingCollector(tracer, OpenTracingCollector.SpanDecorator.DEFAULT,
+                new OpenTracingCollector.ActiveSpanSource() {
+                    @Override
+                    public Span activeSpan(StatementContext ctx) {
+                        return activeSpan;
+                    }
+                },
+                subject)
+        );
+
+        // The actual JDBI code:
+        {
+            Handle handle = dbi.open();
+            Query<Map<String, Object>> statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
+            List<Map<String, Object>> results = statement.list();
+        }
+
+        activeSpan.finish();
+
+        assertTrue(subject.called);
     }
 }
