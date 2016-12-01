@@ -8,7 +8,7 @@
     <name>${project.groupId}:${project.artifactId}</name>
     <url>https://github.com/opentracing-contrib/java-jdbi</url>
 
-    <version>0.2.0</version>
+    <version>0.4.0-SNAPSHOT</version>
 
     <organization>
         <name>OpenTracing</name>
@@ -30,6 +30,11 @@
             <id>bensigelman</id>
             <name>Ben Sigelman</name>
             <email>bhs@lightstep.com</email>
+        </developer>
+        <developer>
+            <id>joeblubaugh_lightstep</id>
+            <name>Joe Blubaugh</name>
+            <email>joe@lightstep.com</email>
         </developer>
     </developers>
 
