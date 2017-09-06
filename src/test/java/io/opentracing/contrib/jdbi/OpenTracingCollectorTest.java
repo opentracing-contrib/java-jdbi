@@ -55,12 +55,15 @@ public class OpenTracingCollectorTest {
         {
             Handle handle = dbi.open();
             Tracer.SpanBuilder parentBuilder = tracer.buildSpan("parent span");
-            try (Span parent = parentBuilder.start()) {
+            final Span parent = parentBuilder.start();
+            try {
                 Query<Map<String, Object>> statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
                 OpenTracingCollector.setParent(statement, parent);
 
                 // A Span will be created automatically and will reference `parent`.
                 List<Map<String, Object>> results = statement.list();
+            } finally {
+                parent.finish();
             }
         }
 
