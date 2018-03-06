@@ -145,7 +145,7 @@
 
     <properties>
         <jdbi.version>2.74</jdbi.version>
-        <opentracing.version>0.14.0</opentracing.version>
+        <opentracing.version>0.31.0</opentracing.version>
         <mysql.version>5.1.6</mysql.version>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>

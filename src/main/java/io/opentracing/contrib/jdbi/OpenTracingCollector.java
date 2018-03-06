@@ -6,6 +6,9 @@ import org.skife.jdbi.v2.SQLStatement;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.TimingCollector;
 
+import java.util.Collections;
+import java.util.HashMap;
+
 /**
  * OpenTracingCollector is a JDBI TimingCollector that creates OpenTracing Spans for each JDBI SQLStatement.
  *
@@ -98,7 +101,11 @@ public class OpenTracingCollector implements TimingCollector {
         Span collectSpan = builder.start();
         spanDecorator.decorateSpan(collectSpan, elapsedNanos, statementContext);
         try {
-            collectSpan.log("SQL query finished", statementContext.getRawSql());
+
+            HashMap<String, String> values = new HashMap<>();
+            values.put("event", "SQL query finished");
+            values.put("sql", statementContext.getRawSql());
+            collectSpan.log(nowMicros, values);
         } finally {
             collectSpan.finish(nowMicros);
         }
