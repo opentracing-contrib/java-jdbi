@@ -104,7 +104,7 @@ public class OpenTracingCollector implements TimingCollector {
 
             HashMap<String, String> values = new HashMap<>();
             values.put("event", "SQL query finished");
-            values.put("sql", statementContext.getRawSql());
+            values.put("db.statement", statementContext.getRawSql());
             collectSpan.log(nowMicros, values);
         } finally {
             collectSpan.finish(nowMicros);
