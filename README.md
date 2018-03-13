@@ -43,5 +43,5 @@ List<Map<String, Object>> results = statement.list();
 
 [ci-img]: https://travis-ci.org/opentracing-contrib/java-jdbi.svg?branch=master
 [ci]: https://travis-ci.org/opentracing-contrib/java-jdbi
-[maven-img]: https://img.shields.io/maven-central/v/io.opentracing.contrib/opentracing-jdbi.svg
+[maven-img]: https://img.shields.io/maven-central/v/io.opentracing.contrib/jdbi-opentracing.svg
 [maven]: http://search.maven.org/#search%7Cga%7C1%7Cjdbi-opentracing
