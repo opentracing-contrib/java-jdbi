@@ -9,7 +9,7 @@ pom.xml
 ```xml
 <dependency>
     <groupId>io.opentracing.contrib</groupId>
-    <artifactId>opentracing-jdbi</artifactId>
+    <artifactId>jdbi-opentracing</artifactId>
     <version>VERSION</version>
 </dependency>
 ```
