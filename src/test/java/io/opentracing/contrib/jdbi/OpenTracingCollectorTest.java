@@ -45,6 +45,7 @@ public class OpenTracingCollectorTest {
 
     @After
     public void after() {
+        handle.execute("DROP TABLE accounts");
         handle.close();
     }
 
@@ -74,6 +75,37 @@ public class OpenTracingCollectorTest {
         assertEquals("DBI Statement", childSpan.operationName());
         assertEquals(parentSpan.context().traceId(), childSpan.context().traceId());
         assertEquals(parentSpan.context().spanId(), childSpan.parentId());
+    }
+
+    @Test
+    public void testCallNextTracer() {
+        MockTracer tracer = new MockTracer();
+
+        class TestTimingCollector implements TimingCollector {
+            boolean called = false;
+            @Override
+            public void collect(long l, StatementContext statementContext) {
+                called = true;
+            }
+        };
+
+        TestTimingCollector subject = new TestTimingCollector();
+
+        dbi.setTimingCollector(new OpenTracingCollector(tracer, subject));
+
+        // The actual JDBI code:
+        try (Handle handle = dbi.open()) {
+            Tracer.SpanBuilder parentBuilder = tracer.buildSpan("parent span");
+            Span parent = parentBuilder.start();
+            Query<Map<String, Object>> statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
+            OpenTracingCollector.setParent(statement, parent);
+
+            // A Span will be created automatically and will reference `parent`.
+            List<Map<String, Object>> results = statement.list();
+            parent.finish();
+        }
+
+        assertTrue(subject.called);
     }
 
     @Test

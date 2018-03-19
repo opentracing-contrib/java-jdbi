@@ -65,9 +65,8 @@ public class OpenTracingCollector implements TimingCollector {
      * @param next   a timing collector to "chain" to. When collect is called on
      *               this TimingCollector, collect will also be called on 'next'
      */
-    @SuppressWarnings("unused")
     public OpenTracingCollector(Tracer tracer, TimingCollector next) {
-        this(tracer, SpanDecorator.DEFAULT, null, null);
+        this(tracer, SpanDecorator.DEFAULT, null, next);
     }
 
     public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator) {
