@@ -94,8 +94,7 @@ public class OpenTracingCollectorTest {
         dbi.setTimingCollector(new OpenTracingCollector(tracer, subject));
 
         // The actual JDBI code:
-        {
-            Handle handle = dbi.open();
+        try (Handle handle = dbi.open()) {
             Tracer.SpanBuilder parentBuilder = tracer.buildSpan("parent span");
             Span parent = parentBuilder.start();
             Query<Map<String, Object>> statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
