@@ -45,6 +45,7 @@ public class OpenTracingCollectorTest {
 
     @After
     public void after() {
+        handle.execute("DROP TABLE accounts");
         handle.close();
     }
 
