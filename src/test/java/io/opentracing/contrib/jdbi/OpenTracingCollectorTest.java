@@ -75,6 +75,39 @@ public class OpenTracingCollectorTest {
     }
 
     @Test
+    public void testCallNextTracer() {
+        MockTracer tracer = new MockTracer();
+
+        class TestTimingCollector implements TimingCollector {
+            boolean called = false;
+            @Override
+            public void collect(long l, StatementContext statementContext) {
+                called = true;
+            }
+        };
+
+        TestTimingCollector subject = new TestTimingCollector();
+
+        DBI dbi = getLocalDBI("_jdbi_test_db");
+        dbi.setTimingCollector(new OpenTracingCollector(tracer, subject));
+
+        // The actual JDBI code:
+        {
+            Handle handle = dbi.open();
+            Tracer.SpanBuilder parentBuilder = tracer.buildSpan("parent span");
+            Span parent = parentBuilder.start();
+            Query<Map<String, Object>> statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
+            OpenTracingCollector.setParent(statement, parent);
+
+            // A Span will be created automatically and will reference `parent`.
+            List<Map<String, Object>> results = statement.list();
+            parent.finish();
+        }
+
+        assertTrue(subject.called);
+    }
+
+    @Test
     // Requires a mysql database running on localhost.
     public void testDecorations() {
         MockTracer tracer = new MockTracer();

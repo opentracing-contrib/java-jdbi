@@ -54,7 +54,7 @@ public class OpenTracingCollector implements TimingCollector {
      */
     @SuppressWarnings("unused")
     public OpenTracingCollector(Tracer tracer, TimingCollector next) {
-        this(tracer, SpanDecorator.DEFAULT, null, null);
+        this(tracer, SpanDecorator.DEFAULT, null, next);
     }
 
     public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator) {
