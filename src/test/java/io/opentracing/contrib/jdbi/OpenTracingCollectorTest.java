@@ -90,7 +90,6 @@ public class OpenTracingCollectorTest {
 
         TestTimingCollector subject = new TestTimingCollector();
 
-        DBI dbi = getLocalDBI("_jdbi_test_db");
         dbi.setTimingCollector(new OpenTracingCollector(tracer, subject));
 
         // The actual JDBI code:
