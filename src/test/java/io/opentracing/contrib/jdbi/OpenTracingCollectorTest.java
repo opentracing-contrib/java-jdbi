@@ -110,7 +110,6 @@ public class OpenTracingCollectorTest {
     }
 
     @Test
-    // Requires a mysql database running on localhost.
     public void testDecorations() {
         MockTracer tracer = new MockTracer();
         dbi.setTimingCollector(new OpenTracingCollector(tracer, new OpenTracingCollector
