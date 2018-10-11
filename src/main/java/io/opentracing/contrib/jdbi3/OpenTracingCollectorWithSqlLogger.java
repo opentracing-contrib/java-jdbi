@@ -2,22 +2,23 @@ package io.opentracing.contrib.jdbi3;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import org.jdbi.v3.core.statement.SqlLogger;
 import org.jdbi.v3.core.statement.SqlStatement;
 import org.jdbi.v3.core.statement.StatementContext;
-import org.jdbi.v3.core.statement.TimingCollector;
 
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 
 /**
- * OpenTracingCollector is a Jdbi TimingCollector that creates OpenTracing Spans for each Jdbi SQLStatement.
+ * OpenTracingCollector is a Jdbi SqlLogger that creates OpenTracing Spans for each Jdbi SQLStatement.
  *
  * <p>Example usage:
  * <pre>{@code
  * io.opentracing.Tracer tracer = ...;
  * Jdbi dbi = ...;
  *
- * // One time only: bind OpenTracing to the Jdbi instance as a TimingCollector.
- * dbi.setTimingCollector(new OpenTracingCollector(tracer));
+ * // One time only: bind OpenTracing to the Jdbi instance as a SqlLogger.
+ * dbi.setSqlLogger(new OpenTracingCollector(tracer));
  *
  * // Elsewhere, anywhere a `Handle` is available:
  * Handle handle = ...;
@@ -33,39 +34,38 @@ import java.util.HashMap;
  * List<Map<String, Object>> results = statement.list();
  * }</pre>
  */
-@SuppressWarnings("WeakerAccess")
-@Deprecated
-public class OpenTracingCollector implements TimingCollector {
+@SuppressWarnings("WeakerAccess,unused")
+public class OpenTracingCollectorWithSqlLogger implements SqlLogger {
     public final static String PARENT_SPAN_ATTRIBUTE_KEY = "io.opentracing.parent";
 
     private final Tracer tracer;
     private final SpanDecorator spanDecorator;
     private final ActiveSpanSource activeSpanSource;
-    private final TimingCollector next;
+    private final SqlLogger next;
 
-    public OpenTracingCollector(Tracer tracer) {
+    public OpenTracingCollectorWithSqlLogger(Tracer tracer) {
         this(tracer, SpanDecorator.DEFAULT);
     }
 
     /**
      * @param tracer the OpenTracing tracer to trace Jdbi calls.
      * @param next a timing collector to "chain" to. When collect is called on
-     *             this TimingCollector, collect will also be called on 'next'
+     *             this SqlLogger, collect will also be called on 'next'
      */
     @SuppressWarnings("unused")
-    public OpenTracingCollector(Tracer tracer, TimingCollector next) {
+    public OpenTracingCollectorWithSqlLogger(Tracer tracer, SqlLogger next) {
         this(tracer, SpanDecorator.DEFAULT, null, null);
     }
 
-    public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator) {
+    public OpenTracingCollectorWithSqlLogger(Tracer tracer, SpanDecorator spanDecorator) {
         this(tracer, spanDecorator, null);
     }
 
-    public OpenTracingCollector(Tracer tracer, ActiveSpanSource spanSource) {
+    public OpenTracingCollectorWithSqlLogger(Tracer tracer, ActiveSpanSource spanSource) {
         this(tracer, SpanDecorator.DEFAULT, spanSource);
     }
 
-    public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator, ActiveSpanSource activeSpanSource) {
+    public OpenTracingCollectorWithSqlLogger(Tracer tracer, SpanDecorator spanDecorator, ActiveSpanSource activeSpanSource) {
         this(tracer, spanDecorator, activeSpanSource, null);
     }
 
@@ -77,20 +77,21 @@ public class OpenTracingCollector implements TimingCollector {
      *                         span when creating a child span.
      *                         @see ActiveSpanSource
      * @param next a timing collector to "chain" to. When collect is called on
-     *             this TimingCollector, collect will also be called on 'next'
+     *             this SqlLogger, collect will also be called on 'next'
      */
-    public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator, ActiveSpanSource activeSpanSource, TimingCollector next) {
+    public OpenTracingCollectorWithSqlLogger(Tracer tracer, SpanDecorator spanDecorator, ActiveSpanSource activeSpanSource, SqlLogger next) {
         this.tracer = tracer;
         this.spanDecorator = spanDecorator;
         this.activeSpanSource = activeSpanSource;
         this.next = next;
     }
 
-    public void collect(long elapsedNanos, StatementContext statementContext) {
+    @Override
+    public void logAfterExecution(StatementContext statementContext) {
         long nowMicros = System.currentTimeMillis() * 1000;
         Tracer.SpanBuilder builder = tracer
-                .buildSpan(spanDecorator.generateOperationName(statementContext))
-                .withStartTimestamp(nowMicros - (elapsedNanos / 1000));
+            .buildSpan(spanDecorator.generateOperationName(statementContext))
+            .withStartTimestamp(nowMicros - (statementContext.getElapsedTime(ChronoUnit.NANOS) / 1000));
         Span parent = (Span)statementContext.getAttribute(PARENT_SPAN_ATTRIBUTE_KEY);
         if (parent == null && this.activeSpanSource != null) {
             parent = this.activeSpanSource.activeSpan(statementContext);
@@ -99,7 +100,7 @@ public class OpenTracingCollector implements TimingCollector {
             builder = builder.asChildOf(parent);
         }
         Span collectSpan = builder.start();
-        spanDecorator.decorateSpan(collectSpan, elapsedNanos, statementContext);
+        spanDecorator.decorateSpan(collectSpan, statementContext.getElapsedTime(ChronoUnit.NANOS), statementContext);
         try {
 
             HashMap<String, String> values = new HashMap<>();
@@ -111,9 +112,11 @@ public class OpenTracingCollector implements TimingCollector {
         }
 
         if (next != null) {
-            next.collect(elapsedNanos, statementContext);
+            next.logAfterExecution(statementContext);
         }
     }
+
+
 
     /**
      * Establish an explicit parent relationship for the (child) Span associated with a SQLStatement.
@@ -129,7 +132,7 @@ public class OpenTracingCollector implements TimingCollector {
      * SpanDecorator allows the OpenTracingCollector user to control the precise naming and decoration of OpenTracing
      * Spans emitted by the collector.
      *
-     * @see OpenTracingCollector#OpenTracingCollector(Tracer, SpanDecorator)
+     * @see OpenTracingCollectorWithSqlLogger#OpenTracingCollectorWithSqlLogger(Tracer, SpanDecorator)
      */
     public interface SpanDecorator {
         SpanDecorator DEFAULT = new SpanDecorator() {
@@ -146,7 +149,7 @@ public class OpenTracingCollector implements TimingCollector {
         /**
          * Transform an Jdbi StatementContext into an OpenTracing Span operation name.
          *
-         * @param ctx the StatementContext passed to TimingCollector.collect()
+         * @param ctx the StatementContext passed to SqlLogger.collect()
          * @return an operation name suitable for the associated OpenTracing Span
          */
         String generateOperationName(StatementContext ctx);
@@ -156,8 +159,8 @@ public class OpenTracingCollector implements TimingCollector {
          * to the StatementContext.
          *
          * @param jdbiSpan the Jdbi Span to decorate (before `finish` is called)
-         * @param elapsedNanos the elapsedNanos passed to TimingCollector.collect()
-         * @param ctx the StatementContext passed to TimingCollector.collect()
+         * @param elapsedNanos the elapsedNanos passed to SqlLogger.collect()
+         * @param ctx the StatementContext passed to SqlLogger.collect()
          */
         void decorateSpan(Span jdbiSpan, long elapsedNanos, StatementContext ctx);
     }
