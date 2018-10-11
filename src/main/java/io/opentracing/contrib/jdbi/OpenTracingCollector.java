@@ -1,3 +1,16 @@
+/*
+ * Copyright 2016-2018 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package io.opentracing.contrib.jdbi;
 
 import io.opentracing.Span;
@@ -6,12 +19,12 @@ import org.skife.jdbi.v2.SQLStatement;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.TimingCollector;
 
-import java.util.Collections;
 import java.util.HashMap;
 
 /**
- * OpenTracingCollector is a JDBI TimingCollector that creates OpenTracing Spans for each JDBI SQLStatement.
- *
+ * OpenTracingCollector is a JDBI TimingCollector that creates OpenTracing Spans for each JDBI
+ * SQLStatement.
+ * <p>
  * <p>Example usage:
  * <pre>{@code
  * io.opentracing.Tracer tracer = ...;
@@ -49,12 +62,11 @@ public class OpenTracingCollector implements TimingCollector {
 
     /**
      * @param tracer the OpenTracing tracer to trace JDBI calls.
-     * @param next a timing collector to "chain" to. When collect is called on
-     *             this TimingCollector, collect will also be called on 'next'
+     * @param next   a timing collector to "chain" to. When collect is called on
+     *               this TimingCollector, collect will also be called on 'next'
      */
-    @SuppressWarnings("unused")
     public OpenTracingCollector(Tracer tracer, TimingCollector next) {
-        this(tracer, SpanDecorator.DEFAULT, null, null);
+        this(tracer, SpanDecorator.DEFAULT, null, next);
     }
 
     public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator) {
@@ -65,21 +77,23 @@ public class OpenTracingCollector implements TimingCollector {
         this(tracer, SpanDecorator.DEFAULT, spanSource);
     }
 
-    public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator, ActiveSpanSource activeSpanSource) {
+    public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator, ActiveSpanSource
+            activeSpanSource) {
         this(tracer, spanDecorator, activeSpanSource, null);
     }
 
     /**
-     * @param tracer the OpenTracing tracer to trace JDBI calls.
-     * @param spanDecorator the SpanDecorator used to name and decorate spans.
-     *                      @see SpanDecorator
+     * @param tracer           the OpenTracing tracer to trace JDBI calls.
+     * @param spanDecorator    the SpanDecorator used to name and decorate spans.
      * @param activeSpanSource a source that can provide the currently active
      *                         span when creating a child span.
-     *                         @see ActiveSpanSource
-     * @param next a timing collector to "chain" to. When collect is called on
-     *             this TimingCollector, collect will also be called on 'next'
+     * @param next             a timing collector to "chain" to. When collect is called on
+     *                         this TimingCollector, collect will also be called on 'next'
+     * @see SpanDecorator
+     * @see ActiveSpanSource
      */
-    public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator, ActiveSpanSource activeSpanSource, TimingCollector next) {
+    public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator, ActiveSpanSource
+            activeSpanSource, TimingCollector next) {
         this.tracer = tracer;
         this.spanDecorator = spanDecorator;
         this.activeSpanSource = activeSpanSource;
@@ -91,7 +105,7 @@ public class OpenTracingCollector implements TimingCollector {
         Tracer.SpanBuilder builder = tracer
                 .buildSpan(spanDecorator.generateOperationName(statementContext))
                 .withStartTimestamp(nowMicros - (elapsedNanos / 1000));
-        Span parent = (Span)statementContext.getAttribute(PARENT_SPAN_ATTRIBUTE_KEY);
+        Span parent = (Span) statementContext.getAttribute(PARENT_SPAN_ATTRIBUTE_KEY);
         if (parent == null && this.activeSpanSource != null) {
             parent = this.activeSpanSource.activeSpan(statementContext);
         }
@@ -116,17 +130,19 @@ public class OpenTracingCollector implements TimingCollector {
     }
 
     /**
-     * Establish an explicit parent relationship for the (child) Span associated with a SQLStatement.
+     * Establish an explicit parent relationship for the (child) Span associated with a
+     * SQLStatement.
      *
      * @param statement the JDBI SQLStatement which will act as the child of `parent`
-     * @param parent the parent Span for `statement`
+     * @param parent    the parent Span for `statement`
      */
     public static void setParent(SQLStatement<?> statement, Span parent) {
         statement.getContext().setAttribute(PARENT_SPAN_ATTRIBUTE_KEY, parent);
     }
 
     /**
-     * SpanDecorator allows the OpenTracingCollector user to control the precise naming and decoration of OpenTracing
+     * SpanDecorator allows the OpenTracingCollector user to control the precise naming and
+     * decoration of OpenTracing
      * Spans emitted by the collector.
      *
      * @see OpenTracingCollector#OpenTracingCollector(Tracer, SpanDecorator)
@@ -152,20 +168,23 @@ public class OpenTracingCollector implements TimingCollector {
         String generateOperationName(StatementContext ctx);
 
         /**
-         * Decorate the given span with additional tags or logs. Implementations may or may not need to refer
+         * Decorate the given span with additional tags or logs. Implementations may or may not
+         * need to refer
          * to the StatementContext.
          *
-         * @param jdbiSpan the JDBI Span to decorate (before `finish` is called)
+         * @param jdbiSpan     the JDBI Span to decorate (before `finish` is called)
          * @param elapsedNanos the elapsedNanos passed to TimingCollector.collect()
-         * @param ctx the StatementContext passed to TimingCollector.collect()
+         * @param ctx          the StatementContext passed to TimingCollector.collect()
          */
         void decorateSpan(Span jdbiSpan, long elapsedNanos, StatementContext ctx);
     }
 
     /**
-     * An abstract API that allows the OpenTracingCollector to customize how parent Spans are discovered.
-     *
-     * For instance, if Spans are stored in a thread-local variable, an ActiveSpanSource could access them like so:
+     * An abstract API that allows the OpenTracingCollector to customize how parent Spans are
+     * discovered.
+     * <p>
+     * For instance, if Spans are stored in a thread-local variable, an ActiveSpanSource could
+     * access them like so:
      * <p>Example usage:
      * <pre>{@code
      * public class SomeClass {
@@ -191,11 +210,13 @@ public class OpenTracingCollector implements TimingCollector {
      */
     public interface ActiveSpanSource {
         /**
-         * Get the active Span (to use as a parent for any DBI Spans). Implementations may or may not need to refer
+         * Get the active Span (to use as a parent for any DBI Spans). Implementations may or may
+         * not need to refer
          * to the StatementContext.
          *
          * @param ctx the StatementContext that needs to be collected and traced
-         * @return the currently active Span (for this thread, etc), or null if no such Span could be found.
+         * @return the currently active Span (for this thread, etc), or null if no such Span
+         * could be found.
          */
         Span activeSpan(StatementContext ctx);
     }
