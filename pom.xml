@@ -57,6 +57,11 @@
             <artifactId>jdbi</artifactId>
             <version>${jdbi.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.jdbi</groupId>
+            <artifactId>jdbi3-core</artifactId>
+            <version>${jdbi3.version}</version>
+        </dependency>
 
         <!-- testing dependencies: -->
         <dependency>
@@ -145,10 +150,11 @@
 
     <properties>
         <jdbi.version>2.74</jdbi.version>
+        <jdbi3.version>3.5.1</jdbi3.version>
         <opentracing.version>0.31.0</opentracing.version>
         <mysql.version>5.1.6</mysql.version>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <issueManagement>
