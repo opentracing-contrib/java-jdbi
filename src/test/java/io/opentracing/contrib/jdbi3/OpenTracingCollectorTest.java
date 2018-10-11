@@ -22,8 +22,8 @@ import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.statement.Query;
 import org.jdbi.v3.core.statement.SqlLogger;
 import org.jdbi.v3.core.statement.StatementContext;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -32,46 +32,30 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-// REQUIRES: a mysql database running on localhost.
 public class OpenTracingCollectorTest {
-    private static Jdbi getLocalJdbi() {
-        return getLocalJdbi("");
-    }
-    private static Jdbi getLocalJdbi(String dbName) {
-        return Jdbi.create("jdbc:mysql://127.0.0.1/" + dbName, "root", "");
+    private Jdbi dbi;
+    private Handle handle;
+
+    @Before
+    public void before() {
+        dbi = Jdbi.create("jdbc:h2:mem:dbi", "sa", "");
+        handle = dbi.open();
+        handle.execute("CREATE TABLE accounts (id BIGINT AUTO_INCREMENT, PRIMARY KEY (id))");
     }
 
-    @BeforeClass
-    public static void setUp() throws Exception {
-        Class.forName("com.mysql.jdbc.Driver");
-        {
-            Jdbi dbi = getLocalJdbi();
-            Handle handle = dbi.open();
-            handle.execute("CREATE DATABASE IF NOT EXISTS _jdbi_test_db");
-        }
-        {
-            Jdbi dbi = getLocalJdbi("_jdbi_test_db");
-            Handle handle = dbi.open();
-            handle.execute("CREATE TABLE IF NOT EXISTS accounts (id BIGINT AUTO_INCREMENT, PRIMARY KEY (id))");
-        }
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        Jdbi dbi = getLocalJdbi();
-        Handle handle = dbi.open();
-        handle.execute("DROP DATABASE _jdbi_test_db");
+    @After
+    public void after() {
+        handle.execute("DROP TABLE accounts");
+        handle.close();
     }
 
     @Test
     public void testParentage() {
         MockTracer tracer = new MockTracer();
-        Jdbi dbi = getLocalJdbi("_jdbi_test_db");
         dbi.setSqlLogger(new OpenTracingCollector(tracer));
 
-        // The actual Jdbi code:
-        {
-            Handle handle = dbi.open();
+        // The actual JDBI code:
+        try (Handle handle = dbi.open()) {
             Tracer.SpanBuilder parentBuilder = tracer.buildSpan("parent span");
             Span parent = parentBuilder.start();
             Query statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
@@ -93,11 +77,42 @@ public class OpenTracingCollectorTest {
     }
 
     @Test
-    // Requires a mysql database running on localhost.
+    public void testCallNextTracer() {
+        MockTracer tracer = new MockTracer();
+
+        class TestTimingCollector implements SqlLogger {
+            boolean called = false;
+
+            @Override
+            public void logAfterExecution(StatementContext context) {
+                called = true;
+            }
+        }
+
+        TestTimingCollector subject = new TestTimingCollector();
+
+        dbi.setSqlLogger(new OpenTracingCollector(tracer, subject));
+
+        // The actual JDBI code:
+        try (Handle handle = dbi.open()) {
+            Tracer.SpanBuilder parentBuilder = tracer.buildSpan("parent span");
+            Span parent = parentBuilder.start();
+            Query statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
+            OpenTracingCollector.setParent(statement, parent);
+
+            // A Span will be created automatically and will reference `parent`.
+            List<Map<String, Object>> results = statement.mapToMap().list();
+            parent.finish();
+        }
+
+        assertTrue(subject.called);
+    }
+
+    @Test
     public void testDecorations() {
         MockTracer tracer = new MockTracer();
-        Jdbi dbi = getLocalJdbi("_jdbi_test_db");
-        dbi.setSqlLogger(new OpenTracingCollector(tracer, new OpenTracingCollector.SpanDecorator(){
+        dbi.setSqlLogger(new OpenTracingCollector(tracer, new OpenTracingCollector
+                .SpanDecorator(){
             @Override
             public String generateOperationName(StatementContext ctx) {
                 return "custom name";
@@ -109,10 +124,10 @@ public class OpenTracingCollectorTest {
             }
         } ));
 
-        // The actual Jdbi code:
-        {
-            Handle handle = dbi.open();
-            Query statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
+        // The actual JDBI code:
+        try (Handle handle = dbi.open()) {
+            Query statement = handle.createQuery("SELECT COUNT(*) FROM " +
+                    "accounts");
             List<Map<String, Object>> results = statement.mapToMap().list();
         }
 
@@ -124,19 +139,17 @@ public class OpenTracingCollectorTest {
     }
 
     @Test
-    // Requires a mysql database running on localhost.
     public void testActiveSpanSource() {
         MockTracer tracer = new MockTracer();
-        Jdbi dbi = getLocalJdbi("_jdbi_test_db");
 
         Tracer.SpanBuilder parentBuilder = tracer.buildSpan("active span");
         final Span activeSpan = parentBuilder.start();
         dbi.setSqlLogger(new OpenTracingCollector(tracer, ctx -> activeSpan));
 
-        // The actual Jdbi code:
-        {
-            Handle handle = dbi.open();
-            Query statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
+        // The actual JDBI code:
+        try (Handle handle = dbi.open()) {
+            Query statement = handle.createQuery("SELECT COUNT(*) FROM " +
+                    "accounts");
             List<Map<String, Object>> results = statement.mapToMap().list();
         }
         activeSpan.finish();
@@ -155,7 +168,6 @@ public class OpenTracingCollectorTest {
     @Test
     public void testChainsToNext() {
         MockTracer tracer = new MockTracer();
-        Jdbi dbi = getLocalJdbi("_jdbi_test_db");
         Tracer.SpanBuilder parentBuilder = tracer.buildSpan("active span");
 
         class TestTimingCollector implements SqlLogger {

@@ -47,7 +47,7 @@ import java.util.HashMap;
  * List<Map<String, Object>> results = statement.mapToMap().list();
  * }</pre>
  */
-@SuppressWarnings("WeakerAccess,unused")
+@SuppressWarnings("WeakerAccess")
 public class OpenTracingCollector implements SqlLogger {
     public final static String PARENT_SPAN_ATTRIBUTE_KEY = "io.opentracing.parent";
 
@@ -65,9 +65,8 @@ public class OpenTracingCollector implements SqlLogger {
      * @param next a timing collector to "chain" to. When collect is called on
      *             this SqlLogger, collect will also be called on 'next'
      */
-    @SuppressWarnings("unused")
     public OpenTracingCollector(Tracer tracer, SqlLogger next) {
-        this(tracer, SpanDecorator.DEFAULT, null, null);
+        this(tracer, SpanDecorator.DEFAULT, null, next);
     }
 
     public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator) {
@@ -85,7 +84,6 @@ public class OpenTracingCollector implements SqlLogger {
     /**
      * @param tracer the OpenTracing tracer to trace Jdbi calls.
      * @param spanDecorator the SpanDecorator used to name and decorate spans.
-     *                      @see SpanDecorator
      * @param activeSpanSource a source that can provide the currently active
      *                         span when creating a child span.
      *                         @see ActiveSpanSource
@@ -132,7 +130,8 @@ public class OpenTracingCollector implements SqlLogger {
 
 
     /**
-     * Establish an explicit parent relationship for the (child) Span associated with a SQLStatement.
+     * Establish an explicit parent relationship for the (child) Span associated with a
+     * SqlStatement.
      *
      * @param statement the Jdbi SqlStatement which will act as the child of `parent`
      * @param parent the parent Span for `statement`
@@ -142,7 +141,8 @@ public class OpenTracingCollector implements SqlLogger {
     }
 
     /**
-     * SpanDecorator allows the OpenTracingCollector user to control the precise naming and decoration of OpenTracing
+     * SpanDecorator allows the OpenTracingCollector user to control the precise naming and
+     * decoration of OpenTracing
      * Spans emitted by the collector.
      *
      * @see OpenTracingCollector#OpenTracingCollector(Tracer, SpanDecorator)
@@ -177,9 +177,11 @@ public class OpenTracingCollector implements SqlLogger {
     }
 
     /**
-     * An abstract API that allows the OpenTracingCollector to customize how parent Spans are discovered.
-     *
-     * For instance, if Spans are stored in a thread-local variable, an ActiveSpanSource could access them like so:
+     * An abstract API that allows the OpenTracingCollector to customize how parent Spans are
+     * discovered.
+     * <p>
+     * For instance, if Spans are stored in a thread-local variable, an ActiveSpanSource could
+     * access them like so:
      * <p>Example usage:
      * <pre>{@code
      * public class SomeClass {
@@ -205,11 +207,13 @@ public class OpenTracingCollector implements SqlLogger {
      */
     public interface ActiveSpanSource {
         /**
-         * Get the active Span (to use as a parent for any Jdbi Spans). Implementations may or may not need to refer
+         * Get the active Span (to use as a parent for any Jdbi Spans). Implementations may or may
+         * not need to refer
          * to the StatementContext.
          *
          * @param ctx the StatementContext that needs to be collected and traced
-         * @return the currently active Span (for this thread, etc), or null if no such Span could be found.
+         * @return the currently active Span (for this thread, etc), or null if no such Span
+         * could be found.
          */
         Span activeSpan(StatementContext ctx);
     }
