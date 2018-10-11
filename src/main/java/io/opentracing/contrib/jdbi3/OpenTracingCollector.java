@@ -9,14 +9,14 @@ import org.jdbi.v3.core.statement.TimingCollector;
 import java.util.HashMap;
 
 /**
- * OpenTracingCollector is a Jdbi TimingCollector that creates OpenTracing Spans for each Jdbi SQLStatement.
+ * OpenTracingCollector is a JDBI TimingCollector that creates OpenTracing Spans for each JDBI SQLStatement.
  *
  * <p>Example usage:
  * <pre>{@code
  * io.opentracing.Tracer tracer = ...;
- * Jdbi dbi = ...;
+ * DBI dbi = ...;
  *
- * // One time only: bind OpenTracing to the Jdbi instance as a TimingCollector.
+ * // One time only: bind OpenTracing to the DBI instance as a TimingCollector.
  * dbi.setTimingCollector(new OpenTracingCollector(tracer));
  *
  * // Elsewhere, anywhere a `Handle` is available:
@@ -29,7 +29,7 @@ import java.util.HashMap;
  * // If a parent Span is available, establish the relationship via setParent.
  * OpenTracingCollector.setParent(statement, parent);
  *
- * // Use Jdbi as per usual, and Spans will be created for every SQLStatement automatically.
+ * // Use JDBI as per usual, and Spans will be created for every SQLStatement automatically.
  * List<Map<String, Object>> results = statement.list();
  * }</pre>
  */
@@ -48,7 +48,7 @@ public class OpenTracingCollector implements TimingCollector {
     }
 
     /**
-     * @param tracer the OpenTracing tracer to trace Jdbi calls.
+     * @param tracer the OpenTracing tracer to trace JDBI calls.
      * @param next a timing collector to "chain" to. When collect is called on
      *             this TimingCollector, collect will also be called on 'next'
      */
@@ -70,7 +70,7 @@ public class OpenTracingCollector implements TimingCollector {
     }
 
     /**
-     * @param tracer the OpenTracing tracer to trace Jdbi calls.
+     * @param tracer the OpenTracing tracer to trace JDBI calls.
      * @param spanDecorator the SpanDecorator used to name and decorate spans.
      *                      @see SpanDecorator
      * @param activeSpanSource a source that can provide the currently active
@@ -118,7 +118,7 @@ public class OpenTracingCollector implements TimingCollector {
     /**
      * Establish an explicit parent relationship for the (child) Span associated with a SQLStatement.
      *
-     * @param statement the Jdbi SQLStatement which will act as the child of `parent`
+     * @param statement the JDBI SQLStatement which will act as the child of `parent`
      * @param parent the parent Span for `statement`
      */
     public static void setParent(SqlStatement<?> statement, Span parent) {
@@ -134,7 +134,7 @@ public class OpenTracingCollector implements TimingCollector {
     public interface SpanDecorator {
         SpanDecorator DEFAULT = new SpanDecorator() {
             public String generateOperationName(StatementContext ctx) {
-                return "Jdbi Statement";
+                return "DBI Statement";
             }
 
             @Override
@@ -144,7 +144,7 @@ public class OpenTracingCollector implements TimingCollector {
         };
 
         /**
-         * Transform an Jdbi StatementContext into an OpenTracing Span operation name.
+         * Transform an DBI StatementContext into an OpenTracing Span operation name.
          *
          * @param ctx the StatementContext passed to TimingCollector.collect()
          * @return an operation name suitable for the associated OpenTracing Span
@@ -155,7 +155,7 @@ public class OpenTracingCollector implements TimingCollector {
          * Decorate the given span with additional tags or logs. Implementations may or may not need to refer
          * to the StatementContext.
          *
-         * @param jdbiSpan the Jdbi Span to decorate (before `finish` is called)
+         * @param jdbiSpan the JDBI Span to decorate (before `finish` is called)
          * @param elapsedNanos the elapsedNanos passed to TimingCollector.collect()
          * @param ctx the StatementContext passed to TimingCollector.collect()
          */
@@ -191,7 +191,7 @@ public class OpenTracingCollector implements TimingCollector {
      */
     public interface ActiveSpanSource {
         /**
-         * Get the active Span (to use as a parent for any Jdbi Spans). Implementations may or may not need to refer
+         * Get the active Span (to use as a parent for any DBI Spans). Implementations may or may not need to refer
          * to the StatementContext.
          *
          * @param ctx the StatementContext that needs to be collected and traced

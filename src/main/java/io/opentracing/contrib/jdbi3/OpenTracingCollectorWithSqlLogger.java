@@ -10,14 +10,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 
 /**
- * OpenTracingCollector is a Jdbi SqlLogger that creates OpenTracing Spans for each Jdbi SQLStatement.
+ * OpenTracingCollector is a JDBI SqlLogger that creates OpenTracing Spans for each JDBI SQLStatement.
  *
  * <p>Example usage:
  * <pre>{@code
  * io.opentracing.Tracer tracer = ...;
- * Jdbi dbi = ...;
+ * DBI dbi = ...;
  *
- * // One time only: bind OpenTracing to the Jdbi instance as a SqlLogger.
+ * // One time only: bind OpenTracing to the DBI instance as a SqlLogger.
  * dbi.setSqlLogger(new OpenTracingCollector(tracer));
  *
  * // Elsewhere, anywhere a `Handle` is available:
@@ -30,7 +30,7 @@ import java.util.HashMap;
  * // If a parent Span is available, establish the relationship via setParent.
  * OpenTracingCollector.setParent(statement, parent);
  *
- * // Use Jdbi as per usual, and Spans will be created for every SQLStatement automatically.
+ * // Use JDBI as per usual, and Spans will be created for every SQLStatement automatically.
  * List<Map<String, Object>> results = statement.list();
  * }</pre>
  */
@@ -48,7 +48,7 @@ public class OpenTracingCollectorWithSqlLogger implements SqlLogger {
     }
 
     /**
-     * @param tracer the OpenTracing tracer to trace Jdbi calls.
+     * @param tracer the OpenTracing tracer to trace JDBI calls.
      * @param next a timing collector to "chain" to. When collect is called on
      *             this SqlLogger, collect will also be called on 'next'
      */
@@ -70,7 +70,7 @@ public class OpenTracingCollectorWithSqlLogger implements SqlLogger {
     }
 
     /**
-     * @param tracer the OpenTracing tracer to trace Jdbi calls.
+     * @param tracer the OpenTracing tracer to trace JDBI calls.
      * @param spanDecorator the SpanDecorator used to name and decorate spans.
      *                      @see SpanDecorator
      * @param activeSpanSource a source that can provide the currently active
@@ -116,8 +116,6 @@ public class OpenTracingCollectorWithSqlLogger implements SqlLogger {
         }
     }
 
-
-
     /**
      * Establish an explicit parent relationship for the (child) Span associated with a SQLStatement.
      *
@@ -137,7 +135,7 @@ public class OpenTracingCollectorWithSqlLogger implements SqlLogger {
     public interface SpanDecorator {
         SpanDecorator DEFAULT = new SpanDecorator() {
             public String generateOperationName(StatementContext ctx) {
-                return "Jdbi Statement";
+                return "DBI Statement";
             }
 
             @Override
@@ -147,7 +145,7 @@ public class OpenTracingCollectorWithSqlLogger implements SqlLogger {
         };
 
         /**
-         * Transform an Jdbi StatementContext into an OpenTracing Span operation name.
+         * Transform an DBI StatementContext into an OpenTracing Span operation name.
          *
          * @param ctx the StatementContext passed to SqlLogger.collect()
          * @return an operation name suitable for the associated OpenTracing Span
@@ -158,7 +156,7 @@ public class OpenTracingCollectorWithSqlLogger implements SqlLogger {
          * Decorate the given span with additional tags or logs. Implementations may or may not need to refer
          * to the StatementContext.
          *
-         * @param jdbiSpan the Jdbi Span to decorate (before `finish` is called)
+         * @param jdbiSpan the JDBI Span to decorate (before `finish` is called)
          * @param elapsedNanos the elapsedNanos passed to SqlLogger.collect()
          * @param ctx the StatementContext passed to SqlLogger.collect()
          */
@@ -194,7 +192,7 @@ public class OpenTracingCollectorWithSqlLogger implements SqlLogger {
      */
     public interface ActiveSpanSource {
         /**
-         * Get the active Span (to use as a parent for any Jdbi Spans). Implementations may or may not need to refer
+         * Get the active Span (to use as a parent for any DBI Spans). Implementations may or may not need to refer
          * to the StatementContext.
          *
          * @param ctx the StatementContext that needs to be collected and traced
