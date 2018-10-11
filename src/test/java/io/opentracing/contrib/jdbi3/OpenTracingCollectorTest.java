@@ -54,7 +54,7 @@ public class OpenTracingCollectorTest {
     public void testParentage() {
         MockTracer tracer = new MockTracer();
         Jdbi dbi = getLocalJdbi("_jdbi_test_db");
-        dbi.setSqlLogger(new OpenTracingCollectorWithSqlLogger(tracer));
+        dbi.setSqlLogger(new OpenTracingCollector(tracer));
 
         // The actual Jdbi code:
         {
@@ -62,7 +62,7 @@ public class OpenTracingCollectorTest {
             Tracer.SpanBuilder parentBuilder = tracer.buildSpan("parent span");
             Span parent = parentBuilder.start();
             Query statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
-            OpenTracingCollectorWithSqlLogger.setParent(statement, parent);
+            OpenTracingCollector.setParent(statement, parent);
 
             // A Span will be created automatically and will reference `parent`.
             List<Map<String, Object>> results = statement.mapToMap().list();
@@ -84,14 +84,14 @@ public class OpenTracingCollectorTest {
     public void testDecorations() {
         MockTracer tracer = new MockTracer();
         Jdbi dbi = getLocalJdbi("_jdbi_test_db");
-        dbi.setSqlLogger(new OpenTracingCollectorWithSqlLogger(tracer, new OpenTracingCollectorWithSqlLogger.SpanDecorator(){
+        dbi.setSqlLogger(new OpenTracingCollector(tracer, new OpenTracingCollector.SpanDecorator(){
             @Override
             public String generateOperationName(StatementContext ctx) {
                 return "custom name";
             }
 
             @Override
-            public void decorateSpan(Span jdbiSpan, long elapsedNanos, StatementContext ctx) {
+            public void decorateSpan(Span jdbiSpan, StatementContext ctx) {
                 jdbiSpan.setTag("testTag", "testVal");
             }
         } ));
@@ -118,7 +118,7 @@ public class OpenTracingCollectorTest {
 
         Tracer.SpanBuilder parentBuilder = tracer.buildSpan("active span");
         final Span activeSpan = parentBuilder.start();
-        dbi.setSqlLogger(new OpenTracingCollectorWithSqlLogger(tracer, ctx -> activeSpan));
+        dbi.setSqlLogger(new OpenTracingCollector(tracer, ctx -> activeSpan));
 
         // The actual Jdbi code:
         {
@@ -157,7 +157,7 @@ public class OpenTracingCollectorTest {
         TestTimingCollector subject = new TestTimingCollector();
 
         final Span activeSpan = parentBuilder.start();
-        dbi.setSqlLogger(new OpenTracingCollectorWithSqlLogger(tracer, OpenTracingCollectorWithSqlLogger.SpanDecorator.DEFAULT,
+        dbi.setSqlLogger(new OpenTracingCollector(tracer, OpenTracingCollector.SpanDecorator.DEFAULT,
             ctx -> activeSpan,
                 subject)
         );
