@@ -70,12 +70,15 @@
     </issueManagement>
 
     <properties>
-        <java.version>1.7</java.version>
+        <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
 
         <jdbi.version>2.78</jdbi.version>
         <opentracing.version>0.31.0</opentracing.version>
+        <jdbi3.version>3.5.1</jdbi3.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -89,6 +92,13 @@
             <groupId>org.jdbi</groupId>
             <artifactId>jdbi</artifactId>
             <version>${jdbi.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jdbi</groupId>
+            <artifactId>jdbi3-core</artifactId>
+            <version>${jdbi3.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
