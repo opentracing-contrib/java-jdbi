@@ -44,11 +44,11 @@ List<Map<String, Object>> results = statement.mapToMap().list();
 ### Older Jdbi3 versions
 
 The `OpentracingSqlLogger` obviously implements `SqlLogger`.
-This interface was introduced into JDBI version `3.2`.
-If you have an older version of Jdbi3, you can use the now-deprecated
+This interface was introduced in JDBI version `3.2`.
+In case you have an older version of Jdbi3, you should use the now-deprecated
 `OpentracingTimingCollector` instead.  
 Configuration and behaviour is the same as described above,
-except for setting the timing collector:
+except setting the SqlLogger changes from `dbi.setSqlLogger(..)` to:
 ```java
 dbi.setTimingCollector(new OpentracingTimingCollector(tracer));
 ``` 
