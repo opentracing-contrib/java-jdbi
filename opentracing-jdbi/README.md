@@ -1,36 +1,44 @@
-[![Build Status][ci-img]][ci] [![Coverage Status][cov-img]][cov] [![Released Version][maven-img]][maven]
-
 # OpenTracing JDBI Instrumentation
-OpenTracing instrumentation for JDBI.
+OpenTracing instrumentation for JDBI v2.
 
-## Installation and Usage
+## Installation
 
-- [Jdbi v2](opentracing-jdbi/README.md)
+[![Released Version][maven-img]][maven]
 
-### Jdbi3
+pom.xml
+```xml
+<dependency>
+    <groupId>io.opentracing.contrib</groupId>
+    <artifactId>opentracing-jdbi</artifactId>
+    <version>VERSION</version>
+</dependency>
+```
+
+## Usage
+
 ```java
 // Instantiate tracer
 Tracer tracer = ...;
 
-// Instatiate Jdbi
-Jdbi dbi = Jdbi.create...;
+// Instatiate DBI
+DBI dbi = ...;
 
-// One time only: bind OpenTracing to the Jdbi instance as a SqlLogger.  
+// One time only: bind OpenTracing to the DBI instance as a TimingCollector.  
 // OpenTracingCollector is a Jdbi SqlLogger that creates OpenTracing Spans for each Jdbi SqlStatement.
-dbi.setSqlLogger(new OpenTracingCollector(tracer)); //io.opentracing.contrib.**jdbi3**.OpenTracingCollector
+dbi.setTimingCollector(new OpenTracingCollector(tracer)); //io.opentracing.contrib.**jdbi**.OpenTracingCollector
  
 // Elsewhere, anywhere a `Handle` is available:
 Handle handle = ...;
 Span parentSpan = ...;  // optional
  
 // Create statements as usual with your `handle` instance.
-Query statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
+Query<Map<String, Object>> statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
  
 // If a parent Span is available, establish the relationship via setParent.
 OpenTracingCollector.setParent(statement, parent);
  
-// Use Jdbi as per usual, and Spans will be created for every SqlStatement automatically.
-List<Map<String, Object>> results = statement.mapToMap().list();
+// Use JDBI as per usual, and Spans will be created for every SQLStatement automatically.
+List<Map<String, Object>> results = statement.list();
 ```
 
 ## License
