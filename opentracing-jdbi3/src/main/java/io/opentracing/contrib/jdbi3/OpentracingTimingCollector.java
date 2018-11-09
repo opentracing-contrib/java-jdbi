@@ -46,8 +46,8 @@ import org.jdbi.v3.core.statement.TimingCollector;
  * List<Map<String, Object>> results = statement.list();
  * }</pre>
  *
- * @see OpenTracingCollector
- * @deprecated Please use the {@code OpenTracingCollector} instead if you have JDBI version 3.2 or greater.
+ * @see OpentracingSqlLogger
+ * @deprecated Please use the {@code OpentracingSqlLogger} instead if you have JDBI version 3.2 or greater.
  */
 @Deprecated
 @SuppressWarnings("WeakerAccess")

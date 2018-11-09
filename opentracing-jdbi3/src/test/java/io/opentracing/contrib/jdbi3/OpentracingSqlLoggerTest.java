@@ -32,7 +32,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class OpenTracingCollectorTest {
+public class OpentracingSqlLoggerTest {
   private Jdbi dbi;
   private Handle handle;
 
@@ -52,14 +52,14 @@ public class OpenTracingCollectorTest {
   @Test
   public void testParentage() {
     MockTracer tracer = new MockTracer();
-    dbi.setSqlLogger(new OpenTracingCollector(tracer));
+    dbi.setSqlLogger(new OpentracingSqlLogger(tracer));
 
     // The actual JDBI code:
     try (Handle handle = dbi.open()) {
       Tracer.SpanBuilder parentBuilder = tracer.buildSpan("parent span");
       Span parent = parentBuilder.start();
       Query statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
-      OpenTracingCollector.setParent(statement, parent);
+      OpentracingSqlLogger.setParent(statement, parent);
 
       // A Span will be created automatically and will reference `parent`.
       List<Map<String, Object>> results = statement.mapToMap().list();
@@ -91,14 +91,14 @@ public class OpenTracingCollectorTest {
 
     TestTimingCollector subject = new TestTimingCollector();
 
-    dbi.setSqlLogger(new OpenTracingCollector(tracer, subject));
+    dbi.setSqlLogger(new OpentracingSqlLogger(tracer, subject));
 
     // The actual JDBI code:
     try (Handle handle = dbi.open()) {
       Tracer.SpanBuilder parentBuilder = tracer.buildSpan("parent span");
       Span parent = parentBuilder.start();
       Query statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
-      OpenTracingCollector.setParent(statement, parent);
+      OpentracingSqlLogger.setParent(statement, parent);
 
       // A Span will be created automatically and will reference `parent`.
       List<Map<String, Object>> results = statement.mapToMap().list();
@@ -111,7 +111,7 @@ public class OpenTracingCollectorTest {
   @Test
   public void testDecorations() {
     MockTracer tracer = new MockTracer();
-    dbi.setSqlLogger(new OpenTracingCollector(tracer, new SpanDecorator() {
+    dbi.setSqlLogger(new OpentracingSqlLogger(tracer, new SpanDecorator() {
       @Override
       public String generateOperationName(StatementContext ctx) {
         return "custom name";
@@ -143,7 +143,7 @@ public class OpenTracingCollectorTest {
 
     Tracer.SpanBuilder parentBuilder = tracer.buildSpan("active span");
     final Span activeSpan = parentBuilder.start();
-    dbi.setSqlLogger(new OpenTracingCollector(tracer, ctx -> activeSpan));
+    dbi.setSqlLogger(new OpentracingSqlLogger(tracer, ctx -> activeSpan));
 
     // The actual JDBI code:
     try (Handle handle = dbi.open()) {
@@ -161,7 +161,7 @@ public class OpenTracingCollectorTest {
 
     MockSpan childSpan = finishedSpans.get(0);
     assertEquals("Jdbi Statement", childSpan.operationName());
-    assertEquals(OpenTracingCollector.COMPONENT_NAME,
+    assertEquals(OpentracingSqlLogger.COMPONENT_NAME,
         childSpan.tags().get(Tags.COMPONENT.getKey()));
     assertEquals("SELECT COUNT(*) FROM accounts", childSpan.tags().get(Tags.DB_STATEMENT.getKey()));
 
@@ -186,7 +186,7 @@ public class OpenTracingCollectorTest {
     TestTimingCollector subject = new TestTimingCollector();
 
     final Span activeSpan = parentBuilder.start();
-    dbi.setSqlLogger(new OpenTracingCollector(tracer, SpanDecorator.DEFAULT,
+    dbi.setSqlLogger(new OpentracingSqlLogger(tracer, SpanDecorator.DEFAULT,
         ctx -> activeSpan,
         subject)
     );

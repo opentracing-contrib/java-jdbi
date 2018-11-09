@@ -22,7 +22,7 @@ import org.jdbi.v3.core.statement.SqlStatement;
 import org.jdbi.v3.core.statement.StatementContext;
 
 /**
- * OpenTracingCollector is a Jdbi SqlLogger that creates OpenTracing Spans for each Jdbi SQLStatement.
+ * OpentracingSqlLogger is a Jdbi SqlLogger that creates OpenTracing Spans for each Jdbi SQLStatement.
  *
  * <p>Example usage:
  * <pre>{@code
@@ -30,7 +30,7 @@ import org.jdbi.v3.core.statement.StatementContext;
  * Jdbi dbi = ...;
  *
  * // One time only: bind OpenTracing to the Jdbi instance as a SqlLogger.
- * dbi.setSqlLogger(new OpenTracingCollector(tracer));
+ * dbi.setSqlLogger(new OpentracingSqlLogger(tracer));
  *
  * // Elsewhere, anywhere a `Handle` is available:
  * Handle handle = ...;
@@ -40,14 +40,14 @@ import org.jdbi.v3.core.statement.StatementContext;
  *  Query statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
  *
  * // If a parent Span is available, establish the relationship via setParent.
- * OpenTracingCollector.setParent(statement, parent);
+ * OpentracingSqlLogger.setParent(statement, parent);
  *
  * // Use Jdbi as per usual, and Spans will be created for every SQLStatement automatically.
  * List<Map<String, Object>> results = statement.mapToMap().list();
  * }</pre>
  */
 @SuppressWarnings("WeakerAccess")
-public class OpenTracingCollector implements SqlLogger {
+public class OpentracingSqlLogger implements SqlLogger {
   public final static String PARENT_SPAN_ATTRIBUTE_KEY = "io.opentracing.parent";
   static final String COMPONENT_NAME = "java-jdbi";
 
@@ -56,7 +56,7 @@ public class OpenTracingCollector implements SqlLogger {
   private final ActiveSpanSource activeSpanSource;
   private final SqlLogger next;
 
-  public OpenTracingCollector(Tracer tracer) {
+  public OpentracingSqlLogger(Tracer tracer) {
     this(tracer, SpanDecorator.DEFAULT);
   }
 
@@ -65,20 +65,20 @@ public class OpenTracingCollector implements SqlLogger {
    * @param next a timing collector to "chain" to. When collect is called on
    * this SqlLogger, collect will also be called on 'next'
    */
-  public OpenTracingCollector(Tracer tracer, SqlLogger next) {
+  public OpentracingSqlLogger(Tracer tracer, SqlLogger next) {
     this(tracer, SpanDecorator.DEFAULT, null, next);
   }
 
-  public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator) {
+  public OpentracingSqlLogger(Tracer tracer, SpanDecorator spanDecorator) {
     this(tracer, spanDecorator, null);
   }
 
-  public OpenTracingCollector(Tracer tracer, ActiveSpanSource spanSource) {
+  public OpentracingSqlLogger(Tracer tracer, ActiveSpanSource spanSource) {
     this(tracer, SpanDecorator.DEFAULT, spanSource);
   }
 
-  public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator,
-      ActiveSpanSource activeSpanSource) {
+  public OpentracingSqlLogger(Tracer tracer, SpanDecorator spanDecorator,
+                              ActiveSpanSource activeSpanSource) {
     this(tracer, spanDecorator, activeSpanSource, null);
   }
 
@@ -91,8 +91,8 @@ public class OpenTracingCollector implements SqlLogger {
    * this SqlLogger, logAfterExecution will also be called on 'next'
    * @see ActiveSpanSource
    */
-  public OpenTracingCollector(Tracer tracer, SpanDecorator spanDecorator,
-      ActiveSpanSource activeSpanSource, SqlLogger next) {
+  public OpentracingSqlLogger(Tracer tracer, SpanDecorator spanDecorator,
+                              ActiveSpanSource activeSpanSource, SqlLogger next) {
     this.tracer = tracer;
     this.spanDecorator = spanDecorator;
     this.activeSpanSource = activeSpanSource;
