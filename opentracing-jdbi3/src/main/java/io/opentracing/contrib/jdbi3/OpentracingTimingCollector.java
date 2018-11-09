@@ -20,9 +20,6 @@ import org.jdbi.v3.core.statement.SqlStatement;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.jdbi.v3.core.statement.TimingCollector;
 
-import static io.opentracing.contrib.jdbi3.OpenTracingCollector.COMPONENT_NAME;
-
-
 /**
  * OpentracingTimingCollector is a JDBI TimingCollector that creates OpenTracing Spans for each JDBI
  * SQLStatement.
@@ -109,7 +106,7 @@ public class OpentracingTimingCollector implements TimingCollector {
         long nowMicros = System.currentTimeMillis() * 1000;
         Tracer.SpanBuilder builder = tracer
                 .buildSpan(spanDecorator.generateOperationName(statementContext))
-                .withTag(Tags.COMPONENT.getKey(), COMPONENT_NAME)
+                .withTag(Tags.COMPONENT.getKey(), "java-jdbi")
                 .withTag(Tags.DB_STATEMENT.getKey(), statementContext.getRawSql())
                 .withStartTimestamp(nowMicros - (elapsedNanos / 1000));
         Span parent = (Span) statementContext.getAttribute(PARENT_SPAN_ATTRIBUTE_KEY);
