@@ -18,11 +18,11 @@ import io.opentracing.Tracer;
 import org.jdbi.v3.core.statement.StatementContext;
 
 /**
- * SpanDecorator allows the OpenTracingCollector user to control the precise naming and
+ * SpanDecorator allows the OpentracingSqlLogger user to control the precise naming and
  * decoration of OpenTracing
  * Spans emitted by the collector.
  *
- * @see OpenTracingCollector#OpenTracingCollector(Tracer, SpanDecorator)
+ * @see OpentracingSqlLogger#OpentracingSqlLogger(Tracer, SpanDecorator)
  */
 public interface SpanDecorator {
 

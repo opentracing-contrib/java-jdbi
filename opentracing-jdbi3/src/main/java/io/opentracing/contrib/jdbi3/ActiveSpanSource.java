@@ -17,7 +17,7 @@ import io.opentracing.Span;
 import org.jdbi.v3.core.statement.StatementContext;
 
 /**
- * An abstract API that allows the OpenTracingCollector to customize how parent Spans are
+ * An abstract API that allows the OpentracingSqlLogger to customize how parent Spans are
  * discovered.
  * <p>
  * For instance, if Spans are stored in a thread-local variable, an ActiveSpanSource could
@@ -41,7 +41,7 @@ import org.jdbi.v3.core.statement.StatementContext;
  *         return activeSpan.get();
  *     }
  * };
- * OpenTracingCollector otColl = new OpenTracingCollector(tracer, spanSource);
+ * OpentracingSqlLogger otColl = new OpentracingSqlLogger(tracer, spanSource);
  * ...
  * }</pre>
  */
