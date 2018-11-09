@@ -5,33 +5,8 @@ OpenTracing instrumentation for JDBI.
 
 ## Installation and Usage
 
-- [Jdbi v2](opentracing-jdbi/README.md)
-
-### Jdbi3
-```java
-// Instantiate tracer
-Tracer tracer = ...;
-
-// Instatiate Jdbi
-Jdbi dbi = Jdbi.create...;
-
-// One time only: bind OpenTracing to the Jdbi instance as a SqlLogger.  
-// OpenTracingCollector is a Jdbi SqlLogger that creates OpenTracing Spans for each Jdbi SqlStatement.
-dbi.setSqlLogger(new OpenTracingCollector(tracer)); //io.opentracing.contrib.**jdbi3**.OpenTracingCollector
- 
-// Elsewhere, anywhere a `Handle` is available:
-Handle handle = ...;
-Span parentSpan = ...;  // optional
- 
-// Create statements as usual with your `handle` instance.
-Query statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
- 
-// If a parent Span is available, establish the relationship via setParent.
-OpenTracingCollector.setParent(statement, parent);
- 
-// Use Jdbi as per usual, and Spans will be created for every SqlStatement automatically.
-List<Map<String, Object>> results = statement.mapToMap().list();
-```
+- [Using OpenTracing with Jdbi v2](opentracing-jdbi/README.md)
+- [Using OpenTracing with Jdbi3](opentracing-jdbi3/README.md)
 
 ## License
 
