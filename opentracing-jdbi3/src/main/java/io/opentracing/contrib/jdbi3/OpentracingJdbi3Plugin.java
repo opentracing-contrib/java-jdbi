@@ -61,12 +61,14 @@ public class OpentracingJdbi3Plugin implements JdbiPlugin {
      * @param tracer The tracer to use (optional, provide {@code null} to fallback to the {@code GlobalTracer})
      */
     public OpentracingJdbi3Plugin(Tracer tracer) {
-        if (tracer == null) try {
-            // Take care not to import anything from util package.
-            tracer = io.opentracing.util.GlobalTracer.get();
-        } catch (LinkageError globalTracerUnavailable) {
-            LOGGER.warning(() -> "No tracer specified and Globaltracer cannot be used. " +
-                    "Please provide a tracer or add opentracing-util to the classpath.");
+        if (tracer == null) {
+            try {
+                // Use fully-qualified name: take care not to import anything from optional io.opentracing.util package!
+                tracer = io.opentracing.util.GlobalTracer.get();
+            } catch (LinkageError globalTracerUnavailable) {
+                LOGGER.warning(() -> "No tracer specified and Globaltracer cannot be used. " +
+                        "Please provide a tracer or add opentracing-util to the classpath.");
+            }
         }
         this.tracer = tracer;
     }
@@ -86,6 +88,11 @@ public class OpentracingJdbi3Plugin implements JdbiPlugin {
         }
     }
 
+    /**
+     * Provides a human-readable string of this plugin with the tracer used (e.g. when logged by Jdbi).
+     *
+     * @return The name of the plugin and the tracer used.
+     */
     @Override
     public String toString() {
         return getClass().getSimpleName() + "{tracer=" + tracer + '}';
