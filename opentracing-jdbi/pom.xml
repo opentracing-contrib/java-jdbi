@@ -24,6 +24,7 @@
     </parent>
 
     <artifactId>opentracing-jdbi</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>OpenTracing Instrumentation for JDBI</description>
 
     <properties>
