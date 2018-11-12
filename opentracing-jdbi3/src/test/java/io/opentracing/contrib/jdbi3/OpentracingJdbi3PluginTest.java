@@ -52,12 +52,13 @@ public class OpentracingJdbi3PluginTest {
         MockSpan parent = tracer.buildSpan("parent span").start();
         long traceId = parent.context().traceId();
         long parentId = parent.context().spanId();
-        try (Scope scope = tracer.scopeManager().activate(parent, false); Handle handle = jdbi.open()) {
+        try (Scope scope = tracer.scopeManager().activate(parent, false);
+             Handle handle = jdbi.open();
+             Query query = handle.createQuery("SELECT COUNT(*) FROM accounts")
+        ) {
             handle.execute("CREATE TABLE accounts (id BIGINT AUTO_INCREMENT, PRIMARY KEY (id))");
-            try (Query query = handle.createQuery("SELECT COUNT(*) FROM accounts")) {
-                assertEquals("Row count", 0L,
-                        (long) query.reduceResultSet(0L, (prev, rs, ctx) -> prev + rs.getLong(1)));
-            }
+            assertEquals("Row count", 0L,
+                    (long) query.reduceResultSet(0L, (prev, rs, ctx) -> prev + rs.getLong(1)));
             handle.execute("DROP TABLE accounts");
         } finally {
             parent.finish();
