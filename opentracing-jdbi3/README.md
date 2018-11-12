@@ -47,21 +47,12 @@ you can also install the plugin with a specific tracer:
 // One time only: Create tracer, Jdbi and install OpentracingJdbi3Plugin
 Tracer tracer = ...;
 Jdbi jdbi = Jdbi.create(...).installPlugin(new OpentracingJdbi3Plugin(tracer));
-
-// Now all JDBI queries will automatically be traced
-// Each span will have the active span from the scope manager as parent span (if present)
-
-// Use Jdbi as per usual, and Spans will be created for every SqlStatement automatically.
-try (Handle handle = jdbi.open(); 
-     Query query = handle.createQuery("SELECT COUNT(*) FROM accounts")) {
-    long count = (long) query.reduceResultSet(0L, (prev, rs, ctx) -> prev + rs.getLong(1)));
-}
 ```
 
 ### Manual OpentracingSqlLogger configuration
 
 If you don't want to use the plugin, the `OpentracingSqlLogger` can still be configured
-manually:
+and used manually:
 
 ```java
 // Instantiate tracer
