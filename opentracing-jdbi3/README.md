@@ -20,7 +20,7 @@ pom.xml
 
 The `OpentracingJdbi3Plugin` can be automatically detected by Jdbi. 
 If not explicitly configured, it will try to use the `GlobalTracer`.
-If there is an active `Scope` set in the OpenTracing [ScopeManger], 
+If there is an active `Scope` set in the OpenTracing [ScopeManager], 
 the parent span will be set accordingly.
 
 ```java
@@ -107,11 +107,11 @@ jdbi.setTimingCollector(new OpentracingTimingCollector(tracer));
 
 [Apache 2.0 License](./LICENSE).
 
-[ci-img]: https://travis-ci.org/opentracing-contrib/java-jdbi.svg?branch=master
-[ci]: https://travis-ci.org/opentracing-contrib/java-jdbi
-[cov-img]: https://coveralls.io/repos/github/opentracing-contrib/java-jdbi/badge.svg?branch=master
-[cov]: https://coveralls.io/github/opentracing-contrib/java-jdbi?branch=master
-[maven-img]: https://img.shields.io/maven-central/v/io.opentracing.contrib/jdbi-opentracing.svg
-[maven]: http://search.maven.org/#search%7Cga%7C1%7Cjdbi-opentracing
+  [ci-img]: https://travis-ci.org/opentracing-contrib/java-jdbi.svg?branch=master
+  [ci]: https://travis-ci.org/opentracing-contrib/java-jdbi
+  [cov-img]: https://coveralls.io/repos/github/opentracing-contrib/java-jdbi/badge.svg?branch=master
+  [cov]: https://coveralls.io/github/opentracing-contrib/java-jdbi?branch=master
+  [maven-img]: https://img.shields.io/maven-central/v/io.opentracing.contrib/jdbi-opentracing.svg
+  [maven]: http://search.maven.org/#search%7Cga%7C1%7Cjdbi-opentracing
 
-[ScopeManager]: https://github.com/opentracing/opentracing-java/blob/master/opentracing-api/src/main/java/io/opentracing/ScopeManager.java
+  [ScopeManager]: https://github.com/opentracing/opentracing-java/blob/master/opentracing-api/src/main/java/io/opentracing/ScopeManager.java
