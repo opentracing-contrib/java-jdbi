@@ -14,11 +14,10 @@
 package io.opentracing.contrib.jdbi3;
 
 import io.opentracing.Tracer;
+import java.util.logging.Logger;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.spi.JdbiPlugin;
 import org.jdbi.v3.core.statement.SqlStatements;
-
-import java.util.logging.Logger;
 
 /**
  * Jdbi 3 {@linkplain JdbiPlugin plugin} that configures either the {@linkplain OpentracingSqlLogger}
@@ -44,57 +43,58 @@ import java.util.logging.Logger;
  * @author Sjoerd Talsma
  */
 public class OpentracingJdbi3Plugin implements JdbiPlugin {
-    private static final Logger LOGGER = Logger.getLogger(OpentracingJdbi3Plugin.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(OpentracingJdbi3Plugin.class.getName());
 
-    private final Tracer tracer;
+  private final Tracer tracer;
 
-    /**
-     * Constructor for the plugin that will use the {@code GlobalTracer}
-     */
-    public OpentracingJdbi3Plugin() {
-        this(null);
+  /**
+   * Constructor for the plugin that will use the {@code GlobalTracer}
+   */
+  public OpentracingJdbi3Plugin() {
+    this(null);
+  }
+
+  /**
+   * Constructor for the plugin that will use a specified {@linkplain Tracer}.
+   *
+   * @param tracer The tracer to use (optional, provide {@code null} to fallback to the {@code GlobalTracer})
+   */
+  public OpentracingJdbi3Plugin(Tracer tracer) {
+    if (tracer == null) {
+      try {
+        // Use fully-qualified name: take care not to import anything from optional io.opentracing.util package!
+        tracer = io.opentracing.util.GlobalTracer.get();
+      } catch (LinkageError globalTracerUnavailable) {
+        LOGGER.warning(() -> "No tracer specified and Globaltracer cannot be used. " +
+            "Please provide a tracer or add opentracing-util to the classpath.");
+      }
     }
+    this.tracer = tracer;
+  }
 
-    /**
-     * Constructor for the plugin that will use a specified {@linkplain Tracer}.
-     *
-     * @param tracer The tracer to use (optional, provide {@code null} to fallback to the {@code GlobalTracer})
-     */
-    public OpentracingJdbi3Plugin(Tracer tracer) {
-        if (tracer == null) {
-            try {
-                // Use fully-qualified name: take care not to import anything from optional io.opentracing.util package!
-                tracer = io.opentracing.util.GlobalTracer.get();
-            } catch (LinkageError globalTracerUnavailable) {
-                LOGGER.warning(() -> "No tracer specified and Globaltracer cannot be used. " +
-                        "Please provide a tracer or add opentracing-util to the classpath.");
-            }
-        }
-        this.tracer = tracer;
+  @Override
+  @SuppressWarnings("deprecation") // Fallback behaviour is deprecated to discourage use
+  public void customizeJdbi(Jdbi jdbi) {
+    if (tracer != null) {
+      final SqlStatements config = jdbi.getConfig(SqlStatements.class);
+      try {
+        config.setSqlLogger(new OpentracingSqlLogger(tracer, config.getSqlLogger()));
+      } catch (LinkageError sqlLoggerApiUnavailable) {
+        LOGGER.warning(() -> "Could not configure Opentracing SqlLogger implementation. " +
+            "Falling back to TimingCollector. Please consider using JDBI version 3.2 or greater.");
+        config.setTimingCollector(
+            new OpentracingTimingCollector(tracer, config.getTimingCollector()));
+      }
     }
+  }
 
-    @Override
-    @SuppressWarnings("deprecation") // Fallback behaviour is deprecated to discourage use
-    public void customizeJdbi(Jdbi jdbi) {
-        if (tracer != null) {
-            final SqlStatements config = jdbi.getConfig(SqlStatements.class);
-            try {
-                config.setSqlLogger(new OpentracingSqlLogger(tracer, config.getSqlLogger()));
-            } catch (LinkageError sqlLoggerApiUnavailable) {
-                LOGGER.warning(() -> "Could not configure Opentracing SqlLogger implementation. " +
-                        "Falling back to TimingCollector. Please consider using JDBI version 3.2 or greater.");
-                config.setTimingCollector(new OpentracingTimingCollector(tracer, config.getTimingCollector()));
-            }
-        }
-    }
-
-    /**
-     * Provides a human-readable string of this plugin with the tracer used (e.g. when logged by Jdbi).
-     *
-     * @return The name of the plugin and the tracer used.
-     */
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "{tracer=" + tracer + '}';
-    }
+  /**
+   * Provides a human-readable string of this plugin with the tracer used (e.g. when logged by Jdbi).
+   *
+   * @return The name of the plugin and the tracer used.
+   */
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{tracer=" + tracer + '}';
+  }
 }
