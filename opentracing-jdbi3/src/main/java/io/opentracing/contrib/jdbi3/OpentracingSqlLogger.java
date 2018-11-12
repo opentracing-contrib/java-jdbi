@@ -78,7 +78,7 @@ public class OpentracingSqlLogger implements SqlLogger {
   }
 
   public OpentracingSqlLogger(Tracer tracer, SpanDecorator spanDecorator,
-                              ActiveSpanSource activeSpanSource) {
+      ActiveSpanSource activeSpanSource) {
     this(tracer, spanDecorator, activeSpanSource, null);
   }
 
@@ -92,7 +92,7 @@ public class OpentracingSqlLogger implements SqlLogger {
    * @see ActiveSpanSource
    */
   public OpentracingSqlLogger(Tracer tracer, SpanDecorator spanDecorator,
-                              ActiveSpanSource activeSpanSource, SqlLogger next) {
+      ActiveSpanSource activeSpanSource, SqlLogger next) {
     this.tracer = tracer;
     this.spanDecorator = spanDecorator;
     this.activeSpanSource = activeSpanSource;

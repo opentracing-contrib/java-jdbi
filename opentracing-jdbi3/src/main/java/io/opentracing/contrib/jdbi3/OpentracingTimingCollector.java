@@ -52,88 +52,89 @@ import org.jdbi.v3.core.statement.TimingCollector;
 @Deprecated
 @SuppressWarnings("WeakerAccess")
 public class OpentracingTimingCollector implements TimingCollector {
-    public final static String PARENT_SPAN_ATTRIBUTE_KEY = "io.opentracing.parent";
+  public final static String PARENT_SPAN_ATTRIBUTE_KEY = "io.opentracing.parent";
 
-    private final Tracer tracer;
-    private final SpanDecorator spanDecorator;
-    private final ActiveSpanSource activeSpanSource;
-    private final TimingCollector next;
+  private final Tracer tracer;
+  private final SpanDecorator spanDecorator;
+  private final ActiveSpanSource activeSpanSource;
+  private final TimingCollector next;
 
-    public OpentracingTimingCollector(Tracer tracer) {
-        this(tracer, SpanDecorator.DEFAULT);
+  public OpentracingTimingCollector(Tracer tracer) {
+    this(tracer, SpanDecorator.DEFAULT);
+  }
+
+  /**
+   * @param tracer the OpenTracing tracer to trace JDBI calls.
+   * @param next a timing collector to "chain" to. When collect is called on
+   * this TimingCollector, collect will also be called on 'next'
+   */
+  public OpentracingTimingCollector(Tracer tracer, TimingCollector next) {
+    this(tracer, SpanDecorator.DEFAULT, null, next);
+  }
+
+  public OpentracingTimingCollector(Tracer tracer, SpanDecorator spanDecorator) {
+    this(tracer, spanDecorator, null);
+  }
+
+  public OpentracingTimingCollector(Tracer tracer, ActiveSpanSource activeSpanSource) {
+    this(tracer, SpanDecorator.DEFAULT, activeSpanSource);
+  }
+
+  public OpentracingTimingCollector(Tracer tracer, SpanDecorator spanDecorator,
+      ActiveSpanSource activeSpanSource) {
+    this(tracer, spanDecorator, activeSpanSource, null);
+  }
+
+  /**
+   * @param tracer the OpenTracing tracer to trace JDBI calls.
+   * @param spanDecorator the SpanDecorator used to name and decorate spans.
+   * @param activeSpanSource a source that can provide the currently active
+   * span when creating a child span.
+   * @param next a timing collector to "chain" to. When collect is called on
+   * this TimingCollector, collect will also be called on 'next'
+   * @see SpanDecorator
+   * @see ActiveSpanSource
+   */
+  public OpentracingTimingCollector(Tracer tracer, SpanDecorator spanDecorator,
+      ActiveSpanSource activeSpanSource, TimingCollector next) {
+    this.tracer = tracer;
+    this.spanDecorator = spanDecorator;
+    this.activeSpanSource = activeSpanSource;
+    this.next = next;
+  }
+
+  public void collect(long elapsedNanos, StatementContext statementContext) {
+    long nowMicros = System.currentTimeMillis() * 1000;
+    Tracer.SpanBuilder builder = tracer
+        .buildSpan(spanDecorator.generateOperationName(statementContext))
+        .withTag(Tags.COMPONENT.getKey(), "java-jdbi")
+        .withTag(Tags.DB_STATEMENT.getKey(), statementContext.getRawSql())
+        .withStartTimestamp(nowMicros - (elapsedNanos / 1000));
+    Span parent = (Span) statementContext.getAttribute(PARENT_SPAN_ATTRIBUTE_KEY);
+    if (parent == null && this.activeSpanSource != null) {
+      parent = this.activeSpanSource.activeSpan(statementContext);
     }
-
-    /**
-     * @param tracer the OpenTracing tracer to trace JDBI calls.
-     * @param next   a timing collector to "chain" to. When collect is called on
-     *               this TimingCollector, collect will also be called on 'next'
-     */
-    public OpentracingTimingCollector(Tracer tracer, TimingCollector next) {
-        this(tracer, SpanDecorator.DEFAULT, null, next);
+    if (parent != null) {
+      builder = builder.asChildOf(parent);
     }
+    Span collectSpan = builder.start();
+    spanDecorator.decorateSpan(collectSpan, statementContext);
+    collectSpan.finish(nowMicros);
 
-    public OpentracingTimingCollector(Tracer tracer, SpanDecorator spanDecorator) {
-        this(tracer, spanDecorator, null);
+    if (next != null) {
+      next.collect(elapsedNanos, statementContext);
     }
+  }
 
-    public OpentracingTimingCollector(Tracer tracer, ActiveSpanSource activeSpanSource) {
-        this(tracer, SpanDecorator.DEFAULT, activeSpanSource);
-    }
-
-    public OpentracingTimingCollector(Tracer tracer, SpanDecorator spanDecorator, ActiveSpanSource activeSpanSource) {
-        this(tracer, spanDecorator, activeSpanSource, null);
-    }
-
-    /**
-     * @param tracer           the OpenTracing tracer to trace JDBI calls.
-     * @param spanDecorator    the SpanDecorator used to name and decorate spans.
-     * @param activeSpanSource a source that can provide the currently active
-     *                         span when creating a child span.
-     * @param next             a timing collector to "chain" to. When collect is called on
-     *                         this TimingCollector, collect will also be called on 'next'
-     * @see SpanDecorator
-     * @see ActiveSpanSource
-     */
-    public OpentracingTimingCollector(Tracer tracer, SpanDecorator spanDecorator,
-                                      ActiveSpanSource activeSpanSource, TimingCollector next) {
-        this.tracer = tracer;
-        this.spanDecorator = spanDecorator;
-        this.activeSpanSource = activeSpanSource;
-        this.next = next;
-    }
-
-    public void collect(long elapsedNanos, StatementContext statementContext) {
-        long nowMicros = System.currentTimeMillis() * 1000;
-        Tracer.SpanBuilder builder = tracer
-                .buildSpan(spanDecorator.generateOperationName(statementContext))
-                .withTag(Tags.COMPONENT.getKey(), "java-jdbi")
-                .withTag(Tags.DB_STATEMENT.getKey(), statementContext.getRawSql())
-                .withStartTimestamp(nowMicros - (elapsedNanos / 1000));
-        Span parent = (Span) statementContext.getAttribute(PARENT_SPAN_ATTRIBUTE_KEY);
-        if (parent == null && this.activeSpanSource != null) {
-            parent = this.activeSpanSource.activeSpan(statementContext);
-        }
-        if (parent != null) {
-            builder = builder.asChildOf(parent);
-        }
-        Span collectSpan = builder.start();
-        spanDecorator.decorateSpan(collectSpan, statementContext);
-        collectSpan.finish(nowMicros);
-
-        if (next != null) {
-            next.collect(elapsedNanos, statementContext);
-        }
-    }
-
-    /**
-     * Establish an explicit parent relationship for the (child) Span associated with a
-     * SQLStatement.
-     *
-     * @param statement the JDBI SQLStatement which will act as the child of `parent`
-     * @param parent    the parent Span for `statement`
-     */
-    public static void setParent(SqlStatement<?> statement, Span parent) {
-        statement.getContext().define(PARENT_SPAN_ATTRIBUTE_KEY, parent);
-    }
+  /**
+   * Establish an explicit parent relationship for the (child) Span associated with a
+   * SQLStatement.
+   *
+   * @param statement the JDBI SQLStatement which will act as the child of `parent`
+   * @param parent the parent Span for `statement`
+   */
+  public static void setParent(SqlStatement<?> statement, Span parent) {
+    statement.getContext().define(PARENT_SPAN_ATTRIBUTE_KEY, parent);
+  }
 
 }
