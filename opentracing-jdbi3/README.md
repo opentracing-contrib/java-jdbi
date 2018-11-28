@@ -96,7 +96,7 @@ jdbi.setTimingCollector(new OpentracingTimingCollector(tracer));
 
 ## License
 
-[Apache 2.0 License](./LICENSE).
+[Apache 2.0 License](../LICENSE).
 
   [ci-img]: https://travis-ci.org/opentracing-contrib/java-jdbi.svg?branch=master
   [ci]: https://travis-ci.org/opentracing-contrib/java-jdbi
