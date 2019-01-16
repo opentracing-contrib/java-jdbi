@@ -73,7 +73,7 @@ Span parentSpan = ...;  // optional
 Query statement = handle.createQuery("SELECT COUNT(*) FROM accounts");
  
 // If a parent Span is available, establish the relationship via setParent.
-OpentracingSqlLogger.setParent(statement, parent);
+OpentracingSqlLogger.setParent(statement, parentSpan);
  
 // Use Jdbi as per usual, and Spans will be created for every SqlStatement automatically.
 List<Map<String, Object>> results = statement.mapToMap().list();
