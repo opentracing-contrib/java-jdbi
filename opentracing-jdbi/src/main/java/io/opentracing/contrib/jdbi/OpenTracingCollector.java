@@ -62,8 +62,8 @@ public class OpenTracingCollector implements TimingCollector {
 
   /**
    * @param tracer the OpenTracing tracer to trace JDBI calls.
-   * @param next a timing collector to "chain" to. When collect is called on
-   * this TimingCollector, collect will also be called on 'next'
+   * @param next a timing collector to "chain" to. When collect is called on this TimingCollector,
+   * collect will also be called on 'next'
    */
   public OpenTracingCollector(Tracer tracer, TimingCollector next) {
     this(tracer, SpanDecorator.DEFAULT, null, next);
@@ -85,10 +85,10 @@ public class OpenTracingCollector implements TimingCollector {
   /**
    * @param tracer the OpenTracing tracer to trace JDBI calls.
    * @param spanDecorator the SpanDecorator used to name and decorate spans.
-   * @param activeSpanSource a source that can provide the currently active
-   * span when creating a child span.
-   * @param next a timing collector to "chain" to. When collect is called on
-   * this TimingCollector, collect will also be called on 'next'
+   * @param activeSpanSource a source that can provide the currently active span when creating a
+   * child span.
+   * @param next a timing collector to "chain" to. When collect is called on this TimingCollector,
+   * collect will also be called on 'next'
    * @see SpanDecorator
    * @see ActiveSpanSource
    */
@@ -125,8 +125,7 @@ public class OpenTracingCollector implements TimingCollector {
   }
 
   /**
-   * Establish an explicit parent relationship for the (child) Span associated with a
-   * SQLStatement.
+   * Establish an explicit parent relationship for the (child) Span associated with a SQLStatement.
    *
    * @param statement the JDBI SQLStatement which will act as the child of `parent`
    * @param parent the parent Span for `statement`

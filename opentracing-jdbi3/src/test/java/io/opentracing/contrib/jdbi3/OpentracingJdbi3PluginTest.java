@@ -44,14 +44,14 @@ public class OpentracingJdbi3PluginTest {
   @Test
   public void testAutomaticPluginDiscoveryUsingGlobalTracer() {
     MockTracer tracer = new MockTracer();
-    GlobalTracer.register(tracer);
+    GlobalTracer.registerIfAbsent(tracer);
 
     Jdbi jdbi = Jdbi.create("jdbc:h2:mem:dbi", "sa", "").installPlugins();
 
     MockSpan parent = tracer.buildSpan("parent span").start();
     long traceId = parent.context().traceId();
     long parentId = parent.context().spanId();
-    try (Scope scope = tracer.scopeManager().activate(parent, false);
+    try (Scope ignored = tracer.scopeManager().activate(parent);
         Handle handle = jdbi.open();
         Query query = handle.createQuery("SELECT COUNT(*) FROM accounts")
     ) {
@@ -89,7 +89,7 @@ public class OpentracingJdbi3PluginTest {
     MockSpan parent = tracer.buildSpan("parent span").start();
     long traceId = parent.context().traceId();
     long parentId = parent.context().spanId();
-    try (Scope scope = tracer.scopeManager().activate(parent, false); Handle handle = jdbi.open()) {
+    try (Scope ignored = tracer.scopeManager().activate(parent); Handle handle = jdbi.open()) {
       handle.execute("CREATE TABLE accounts (id BIGINT AUTO_INCREMENT, PRIMARY KEY (id))");
       try (Query query = handle.createQuery("SELECT COUNT(*) FROM accounts")) {
         assertEquals("Row count", 0L,

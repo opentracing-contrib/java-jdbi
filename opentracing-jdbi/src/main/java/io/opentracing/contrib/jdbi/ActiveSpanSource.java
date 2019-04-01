@@ -20,8 +20,8 @@ import org.skife.jdbi.v2.StatementContext;
  * An abstract API that allows the OpenTracingCollector to customize how parent Spans are
  * discovered.
  * <p>
- * For instance, if Spans are stored in a thread-local variable, an ActiveSpanSource could
- * access them like so:
+ * For instance, if Spans are stored in a thread-local variable, an ActiveSpanSource could access
+ * them like so:
  * <p>Example usage:
  * <pre>{@code
  * public class SomeClass {
@@ -47,13 +47,12 @@ import org.skife.jdbi.v2.StatementContext;
  */
 public interface ActiveSpanSource {
   /**
-   * Get the active Span (to use as a parent for any DBI Spans). Implementations may or may
-   * not need to refer
-   * to the StatementContext.
+   * Get the active Span (to use as a parent for any DBI Spans). Implementations may or may not need
+   * to refer to the StatementContext.
    *
    * @param ctx the StatementContext that needs to be collected and traced
-   * @return the currently active Span (for this thread, etc), or null if no such Span
-   * could be found.
+   * @return the currently active Span (for this thread, etc), or null if no such Span could be
+   * found.
    */
   Span activeSpan(StatementContext ctx);
 }

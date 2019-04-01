@@ -22,7 +22,8 @@ import org.jdbi.v3.core.statement.SqlStatement;
 import org.jdbi.v3.core.statement.StatementContext;
 
 /**
- * OpentracingSqlLogger is a Jdbi SqlLogger that creates OpenTracing Spans for each Jdbi SQLStatement.
+ * OpentracingSqlLogger is a Jdbi SqlLogger that creates OpenTracing Spans for each Jdbi
+ * SQLStatement.
  *
  * <p>Example usage:
  * <pre>{@code
@@ -62,8 +63,8 @@ public class OpentracingSqlLogger implements SqlLogger {
 
   /**
    * @param tracer the OpenTracing tracer to trace Jdbi calls.
-   * @param next a timing collector to "chain" to. When collect is called on
-   * this SqlLogger, collect will also be called on 'next'
+   * @param next a timing collector to "chain" to. When collect is called on this SqlLogger, collect
+   * will also be called on 'next'
    */
   public OpentracingSqlLogger(Tracer tracer, SqlLogger next) {
     this(tracer, SpanDecorator.DEFAULT, null, next);
@@ -85,10 +86,10 @@ public class OpentracingSqlLogger implements SqlLogger {
   /**
    * @param tracer the OpenTracing tracer to trace Jdbi calls.
    * @param spanDecorator the SpanDecorator used to name and decorate spans.
-   * @param activeSpanSource a source that can provide the currently active
-   * span when creating a child span.
-   * @param next a timing collector to "chain" to. When logAfterExecution is called on
-   * this SqlLogger, logAfterExecution will also be called on 'next'
+   * @param activeSpanSource a source that can provide the currently active span when creating a
+   * child span.
+   * @param next a timing collector to "chain" to. When logAfterExecution is called on this
+   * SqlLogger, logAfterExecution will also be called on 'next'
    * @see ActiveSpanSource
    */
   public OpentracingSqlLogger(Tracer tracer, SpanDecorator spanDecorator,
@@ -125,8 +126,7 @@ public class OpentracingSqlLogger implements SqlLogger {
 
 
   /**
-   * Establish an explicit parent relationship for the (child) Span associated with a
-   * SqlStatement.
+   * Establish an explicit parent relationship for the (child) Span associated with a SqlStatement.
    *
    * @param statement the Jdbi SqlStatement which will act as the child of `parent`
    * @param parent the parent Span for `statement`

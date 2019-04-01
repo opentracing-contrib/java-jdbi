@@ -47,7 +47,8 @@ import org.jdbi.v3.core.statement.TimingCollector;
  * }</pre>
  *
  * @see OpentracingSqlLogger
- * @deprecated Please use the {@code OpentracingSqlLogger} instead if you have JDBI version 3.2 or greater.
+ * @deprecated Please use the {@code OpentracingSqlLogger} instead if you have JDBI version 3.2 or
+ * greater.
  */
 @Deprecated
 @SuppressWarnings("WeakerAccess")
@@ -65,8 +66,8 @@ public class OpentracingTimingCollector implements TimingCollector {
 
   /**
    * @param tracer the OpenTracing tracer to trace JDBI calls.
-   * @param next a timing collector to "chain" to. When collect is called on
-   * this TimingCollector, collect will also be called on 'next'
+   * @param next a timing collector to "chain" to. When collect is called on this TimingCollector,
+   * collect will also be called on 'next'
    */
   public OpentracingTimingCollector(Tracer tracer, TimingCollector next) {
     this(tracer, SpanDecorator.DEFAULT, null, next);
@@ -88,10 +89,10 @@ public class OpentracingTimingCollector implements TimingCollector {
   /**
    * @param tracer the OpenTracing tracer to trace JDBI calls.
    * @param spanDecorator the SpanDecorator used to name and decorate spans.
-   * @param activeSpanSource a source that can provide the currently active
-   * span when creating a child span.
-   * @param next a timing collector to "chain" to. When collect is called on
-   * this TimingCollector, collect will also be called on 'next'
+   * @param activeSpanSource a source that can provide the currently active span when creating a
+   * child span.
+   * @param next a timing collector to "chain" to. When collect is called on this TimingCollector,
+   * collect will also be called on 'next'
    * @see SpanDecorator
    * @see ActiveSpanSource
    */
@@ -127,8 +128,7 @@ public class OpentracingTimingCollector implements TimingCollector {
   }
 
   /**
-   * Establish an explicit parent relationship for the (child) Span associated with a
-   * SQLStatement.
+   * Establish an explicit parent relationship for the (child) Span associated with a SQLStatement.
    *
    * @param statement the JDBI SQLStatement which will act as the child of `parent`
    * @param parent the parent Span for `statement`

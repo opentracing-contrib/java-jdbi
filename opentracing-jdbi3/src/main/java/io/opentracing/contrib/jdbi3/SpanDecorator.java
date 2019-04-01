@@ -18,9 +18,8 @@ import io.opentracing.Tracer;
 import org.jdbi.v3.core.statement.StatementContext;
 
 /**
- * SpanDecorator allows the OpentracingSqlLogger user to control the precise naming and
- * decoration of OpenTracing
- * Spans emitted by the collector.
+ * SpanDecorator allows the OpentracingSqlLogger user to control the precise naming and decoration
+ * of OpenTracing Spans emitted by the collector.
  *
  * @see OpentracingSqlLogger#OpentracingSqlLogger(Tracer, SpanDecorator)
  */
@@ -46,8 +45,8 @@ public interface SpanDecorator {
   String generateOperationName(StatementContext ctx);
 
   /**
-   * Decorate the given span with additional tags or logs. Implementations may or may not need to refer
-   * to the StatementContext.
+   * Decorate the given span with additional tags or logs. Implementations may or may not need to
+   * refer to the StatementContext.
    *
    * @param jdbiSpan the Jdbi Span to decorate (before `finish` is called)
    * @param ctx the StatementContext passed to SqlLogger.logAfterExecution()

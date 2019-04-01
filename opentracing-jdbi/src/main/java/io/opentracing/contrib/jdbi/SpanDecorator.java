@@ -18,9 +18,8 @@ import io.opentracing.Tracer;
 import org.skife.jdbi.v2.StatementContext;
 
 /**
- * SpanDecorator allows the OpenTracingCollector user to control the precise naming and
- * decoration of OpenTracing
- * Spans emitted by the collector.
+ * SpanDecorator allows the OpenTracingCollector user to control the precise naming and decoration
+ * of OpenTracing Spans emitted by the collector.
  *
  * @see OpenTracingCollector#OpenTracingCollector(Tracer, SpanDecorator)
  */
@@ -47,9 +46,8 @@ public interface SpanDecorator {
   String generateOperationName(StatementContext ctx);
 
   /**
-   * Decorate the given span with additional tags or logs. Implementations may or may not
-   * need to refer
-   * to the StatementContext.
+   * Decorate the given span with additional tags or logs. Implementations may or may not need to
+   * refer to the StatementContext.
    *
    * @param jdbiSpan the JDBI Span to decorate (before `finish` is called)
    * @param elapsedNanos the elapsedNanos passed to TimingCollector.collect()

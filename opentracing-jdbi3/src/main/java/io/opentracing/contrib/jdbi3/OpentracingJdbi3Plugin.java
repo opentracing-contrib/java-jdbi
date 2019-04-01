@@ -20,8 +20,8 @@ import org.jdbi.v3.core.spi.JdbiPlugin;
 import org.jdbi.v3.core.statement.SqlStatements;
 
 /**
- * Jdbi 3 {@linkplain JdbiPlugin plugin} that configures either the {@linkplain OpentracingSqlLogger}
- * or the {@linkplain OpentracingTimingCollector} (in case of Jdbi &lt; 3.2).
+ * Jdbi 3 {@linkplain JdbiPlugin plugin} that configures either the {@linkplain
+ * OpentracingSqlLogger} or the {@linkplain OpentracingTimingCollector} (in case of Jdbi &lt; 3.2).
  * <p>
  * <strong>Usage:</strong><br>
  * You can provide your own {@linkplain Tracer} and install the plugin manually:
@@ -32,8 +32,8 @@ import org.jdbi.v3.core.statement.SqlStatements;
  * </code></pre>
  * <p>
  * Alternatively, if you have a {@code GlobalTracer} from the
- * <a href="https://github.com/opentracing/opentracing-java/tree/master/opentracing-util">OpenTracing util library</a>
- * you can take advantage of the automatic Plugin resolution in Jdbi:
+ * <a href="https://github.com/opentracing/opentracing-java/tree/master/opentracing-util">OpenTracing
+ * util library</a> you can take advantage of the automatic Plugin resolution in Jdbi:
  * <pre><code>
  * GlobalTracer.registerIfAbsent(() -> initializeMyTracer());
  * Jdbi jdbi = ...
@@ -57,7 +57,8 @@ public class OpentracingJdbi3Plugin implements JdbiPlugin {
   /**
    * Constructor for the plugin that will use a specified {@linkplain Tracer}.
    *
-   * @param tracer The tracer to use (optional, provide {@code null} to fallback to the {@code GlobalTracer})
+   * @param tracer The tracer to use (optional, provide {@code null} to fallback to the {@code
+   * GlobalTracer})
    */
   public OpentracingJdbi3Plugin(Tracer tracer) {
     if (tracer == null) {
@@ -89,7 +90,8 @@ public class OpentracingJdbi3Plugin implements JdbiPlugin {
   }
 
   /**
-   * Provides a human-readable string of this plugin with the tracer used (e.g. when logged by Jdbi).
+   * Provides a human-readable string of this plugin with the tracer used (e.g. when logged by
+   * Jdbi).
    *
    * @return The name of the plugin and the tracer used.
    */
