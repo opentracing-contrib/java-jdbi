@@ -78,9 +78,15 @@ public class OpentracingJdbi3Plugin implements JdbiPlugin {
   public void customizeJdbi(Jdbi jdbi) {
     if (tracer != null) {
       final SqlStatements config = jdbi.getConfig(SqlStatements.class);
+      if (config.getSqlLogger() instanceof OpentracingSqlLogger) {
+        return;
+      }
       try {
         config.setSqlLogger(new OpentracingSqlLogger(tracer, config.getSqlLogger()));
       } catch (LinkageError sqlLoggerApiUnavailable) {
+        if (config.getTimingCollector() instanceof OpentracingTimingCollector) {
+          return;
+        }
         LOGGER.warning(() -> "Could not configure Opentracing SqlLogger implementation. " +
             "Falling back to TimingCollector. Please consider using JDBI version 3.2 or greater.");
         config.setTimingCollector(
